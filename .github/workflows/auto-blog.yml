@@ -1,0 +1,39 @@
+name: Auto Blog
+
+on:
+  schedule:
+    - cron: "0 */12 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run generate
+      - run: npm run build
+      - run: npm run audit:seo
+      - name: Commit generated blog update
+        run: |
+          git config user.name "mdevtech-auto-blog"
+          git config user.email "mdevtech-auto-blog@users.noreply.github.com"
+          git add content/posts public scripts src package.json package-lock.json .github/workflows
+          git diff --cached --quiet || git commit -m "chore: generate scheduled SEO blog post"
+          git push
+    env:
+      SITE_URL: https://mdevtech.vercel.app
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
+      SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      GOOGLE_ANALYTICS_ID: ${{ secrets.GOOGLE_ANALYTICS_ID }}
+      GOOGLE_SITE_VERIFICATION: ${{ secrets.GOOGLE_SITE_VERIFICATION }}
+      GOOGLE_ADSENSE_ID: ${{ secrets.GOOGLE_ADSENSE_ID }}
+      HERMES_TIMEOUT_MS: 600000
+      STRICT_SEO: "1"

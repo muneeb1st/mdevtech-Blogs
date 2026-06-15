@@ -1,0 +1,1 @@
+<OpenSearchDescription xmlns="http://a9.com/-/spec/opensearch/1.1/"><ShortName>mdevtech Blogs</ShortName><Description>Search mdevtech Blogs</Description><InputEncoding>UTF-8</InputEncoding><Url type="text/html" template="https://mdevtech.vercel.app/?q={searchTerms}"/></OpenSearchDescription>

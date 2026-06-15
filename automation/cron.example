@@ -1,0 +1,4 @@
+# Run from `crontab -e` after replacing paths if needed.
+# Generates a new Hermes/SEO post and rebuilds the static site every 12 hours.
+
+0 */12 * * * cd /home/ubuntu/ai-auto-blog && /usr/bin/env npm run generate && /usr/bin/env npm run build && /usr/bin/env npm run audit:seo >> /home/ubuntu/ai-auto-blog/automation/cron.log 2>&1

@@ -1,0 +1,22 @@
+{
+  "generatedAt": "2026-06-15T22:56:06.370Z",
+  "summary": {
+    "posts": 1,
+    "errors": 0,
+    "warnings": 0
+  },
+  "posts": [
+    {
+      "slug": "2026-06-15-12-ai-social-media-content-calendar-workflow",
+      "passed": true,
+      "errors": [],
+      "warnings": [],
+      "metrics": {
+        "titleLength": 67,
+        "metaTitleLength": 64,
+        "metaDescriptionLength": 160,
+        "bodyWordCount": 1280
+      }
+    }
+  ]
+}

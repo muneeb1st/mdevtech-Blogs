@@ -1,0 +1,29 @@
+{
+  "version": "https://jsonfeed.org/version/1.1",
+  "title": "mdevtech Blogs",
+  "home_page_url": "https://mdevtech.vercel.app/",
+  "feed_url": "https://mdevtech.vercel.app/feed.json",
+  "description": "Practical AI tools and workflows for students, freelancers, and small local businesses.",
+  "authors": [
+    {
+      "name": "muneeb1st"
+    }
+  ],
+  "items": [
+    {
+      "id": "https://mdevtech.vercel.app/posts/2026-06-15-12-ai-social-media-content-calendar-workflow/",
+      "url": "https://mdevtech.vercel.app/posts/2026-06-15-12-ai-social-media-content-calendar-workflow/",
+      "title": "AI social media content calendar workflow for small business owners",
+      "summary": "A practical AI social media content calendar workflow for small business owners. Tools, prompt templates, and verification checklist included.",
+      "date_published": "2026-06-15T22:55:57.133Z",
+      "tags": [
+        "AI automation",
+        "small business owners",
+        "AI social media content calendar",
+        "workflow",
+        "productivity",
+        "AI tools"
+      ]
+    }
+  ]
+}
