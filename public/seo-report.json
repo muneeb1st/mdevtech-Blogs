@@ -1,11 +1,24 @@
 {
-  "generatedAt": "2026-06-16T08:03:01.465Z",
+  "generatedAt": "2026-06-16T18:03:36.877Z",
   "summary": {
-    "posts": 3,
+    "posts": 4,
     "errors": 0,
     "warnings": 0
   },
   "posts": [
+    {
+      "slug": "2026-06-16-12-ai-resume-builder-for-students-workflow",
+      "seoScore": 0.9,
+      "passed": true,
+      "errors": [],
+      "warnings": [],
+      "metrics": {
+        "titleLength": 52,
+        "metaTitleLength": 49,
+        "metaDescriptionLength": 145,
+        "bodyWordCount": 1725
+      }
+    },
     {
       "slug": "2026-06-16-00-ai-faq-generator-for-website-workflow",
       "seoScore": 0.9,

@@ -5,8 +5,17 @@
   <link rel="self" type="application/atom+xml" href="https://mdevtech.vercel.app/atom.xml"/>
   <link rel="alternate" type="text/html" href="https://mdevtech.vercel.app/"/>
   <id>https://mdevtech.vercel.app/</id>
-  <updated>2026-06-16T02:22:19.121Z</updated>
+  <updated>2026-06-16T17:58:40.278Z</updated>
   <author><name>muneeb1st</name></author>
+  <entry>
+    <title>AI resume builder for students workflow for students</title>
+    <link rel="alternate" type="text/html" href="https://mdevtech.vercel.app/posts/2026-06-16-12-ai-resume-builder-for-students-workflow/"/>
+    <id>https://mdevtech.vercel.app/posts/2026-06-16-12-ai-resume-builder-for-students-workflow/</id>
+    <published>2026-06-16T17:58:40.278Z</published>
+    <updated>2026-06-16T17:58:40.278Z</updated>
+    <summary>Step-by-step AI resume builder for students workflow for students. Tools, prompt templates, verification checklist, and common mistakes to avoid.</summary>
+    <author><name>muneeb1st</name></author>
+  </entry>
   <entry>
     <title>AI FAQ generator for website workflow for small business owners</title>
     <link rel="alternate" type="text/html" href="https://mdevtech.vercel.app/posts/2026-06-16-00-ai-faq-generator-for-website-workflow/"/>

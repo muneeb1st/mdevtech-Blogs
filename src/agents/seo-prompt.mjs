@@ -212,6 +212,62 @@ function buildFallbackPlan({ cluster, primary, audience, angle }) {
     };
   }
 
+  if (primaryLower.includes('resume') || primaryLower.includes('cv')) {
+    return {
+      outcomeExamples: [
+        'A one-page student resume that turns class projects, volunteer work, internships, and part-time jobs into honest bullet points',
+        'Three tailored resume versions for a software internship, campus role, and entry-level support position',
+        'A skills section that separates tools actually used from tools only watched in tutorials',
+        'A final review checklist that catches invented metrics, inflated titles, and missing dates before sending'
+      ],
+      toolRows: [
+        ['Experience inventory', tools[0] || 'LLM', 'Turns raw student activities into categorized projects, skills, coursework, and achievements'],
+        ['Resume drafting', tools[1] || 'Google Docs', 'Keeps bullet points editable so the student can correct facts before exporting'],
+        ['Layout polish', tools[2] || 'Canva', 'Helps create a clean one-page resume without hiding weak content behind decoration'],
+        ['Profile matching', tools[3] || 'LinkedIn', 'Checks whether resume wording matches public profile, projects, and role targets']
+      ],
+      steps: [
+        {
+          title: workflow[0] || 'List experience',
+          detail: 'Start with an evidence inventory, not a resume template. Ask the student to list courses, projects, labs, assignments, competitions, volunteer work, part-time jobs, societies, tools used, links, and outcomes. Include weak-looking experience too, because AI can often turn simple work into clearer responsibility statements without inventing anything. The rule is strict: if the student cannot explain it in an interview, it does not belong on the resume.',
+          prompt: `Help me build a student resume evidence inventory. Organize these notes into education, projects, coursework, skills, volunteer work, part-time experience, achievements, links, and missing details. Do not invent dates, metrics, job titles, or technologies.\n\nRaw notes:\n[paste notes]`,
+          check: 'Every item should be traceable to a real project, class, role, certificate, link, or activity.'
+        },
+        {
+          title: workflow[1] || 'Draft bullets',
+          detail: 'Draft bullets from evidence using action, task, tool, and outcome. Students often have limited experience, so the goal is clarity, not fake seniority. A bullet like "Built a Java calculator using OOP concepts for a class project" is better than "Engineered scalable fintech solutions" when the second sentence is not true. Ask AI for several versions, then choose the most honest and specific one.',
+          prompt: `Turn this student experience into resume bullet points. Use action verbs, tools used, project context, and honest outcomes. Keep each bullet one line where possible. Mark weak, vague, or unverifiable bullets instead of exaggerating them.`,
+          check: 'Remove inflated verbs, invented numbers, fake leadership claims, and tools the student cannot discuss.'
+        },
+        {
+          title: workflow[2] || 'Check facts',
+          detail: 'Before tailoring the resume, run a fact audit. Check dates, degree name, institution spelling, project links, GitHub links, certificates, tool names, and whether each skill is actually demonstrated somewhere. This is where many AI resumes fail: the formatting looks good, but the facts do not survive a recruiter call or technical interview.',
+          prompt: `Audit this resume draft for risky claims. Create three lists: verified facts, claims needing evidence, and lines that sound exaggerated for a student. Suggest honest rewrites for the risky lines.`,
+          check: 'The final resume should contain no claim that depends only on AI wording.'
+        },
+        {
+          title: workflow[3] || 'Tailor to job',
+          detail: 'Tailor only after the base resume is accurate. Paste the job description and ask AI to map real student evidence to the required skills. Do not copy keywords blindly. If the job asks for React and the student only used basic HTML/CSS, the resume should not pretend React experience. Instead, it can emphasize learning ability, relevant coursework, or a related project.',
+          prompt: `Compare this student resume with the job description. Match only real experience to the role requirements. Suggest wording changes, missing evidence, and a priority order for sections. Do not add skills or experience that are not in the resume evidence inventory.`,
+          check: 'The tailored version must still be truthful if the interviewer asks for details about every bullet.'
+        }
+      ],
+      mistakes: [
+        'Letting AI invent internship duties, metrics, certifications, or job titles',
+        'Using a resume design that looks polished but hides weak or vague content',
+        'Adding every tool keyword from a job description even when the student has not used it',
+        'Writing bullets so broad that they could belong to any student',
+        'Forgetting to check links, dates, spelling, file name, and PDF formatting before sending'
+      ],
+      verification: [
+        'Degree name, university name, dates, GPA if listed, certificates, and project links',
+        'Whether every tool in the skills section appears in a real project, course, or experience',
+        'Whether metrics, achievements, and leadership claims are true and explainable',
+        'Whether the resume matches the student LinkedIn, GitHub, portfolio, and application target'
+      ]
+    };
+  }
+
   return {
     outcomeExamples: [
       `A finished ${primary} asset based on real questions, notes, or business inputs`,

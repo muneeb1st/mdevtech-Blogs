@@ -90,14 +90,17 @@ function normalizePost(raw, cluster, now) {
   const slug = `${slot}-${slugify(raw.slug || baseSlug)}`;
   const body = raw.body || raw.bodyMarkdown || '';
 
-  const jsonLd = raw.jsonLd || {
-      '@context': 'https://schema.org',
-      '@type': 'BlogPosting',
-      headline: title,
-      description: raw.metaDescription || '',
-      keywords: Array.isArray(raw.focusKeywords) ? raw.focusKeywords : [cluster.primaryKeyword],
-      articleSection: 'AI automation'
-    };
+  const baseJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BlogPosting',
+    headline: title,
+    description: raw.metaDescription || '',
+    keywords: Array.isArray(raw.focusKeywords) ? raw.focusKeywords : [cluster.primaryKeyword],
+    articleSection: 'AI automation'
+  };
+  const jsonLd = raw.jsonLd && typeof raw.jsonLd === 'object'
+    ? { ...baseJsonLd, ...raw.jsonLd, '@context': 'https://schema.org', '@type': 'BlogPosting' }
+    : baseJsonLd;
 
   const post = {
     title,
@@ -120,12 +123,9 @@ function normalizePost(raw, cluster, now) {
     claimsNeedingHumanCheck: Array.isArray(raw.claimsNeedingHumanCheck) ? raw.claimsNeedingHumanCheck : ['Verify tool names, prices, dates, and statistics before publishing.']
   };
 
-  const validation = validatePostSeo(post, { strict, siteUrl });
-  if (!validation.passed) {
-    if (strict) {
-      throw new Error(`SEO validation failed: ${validation.errors.join('; ')}`);
-    }
-    console.warn('[SEO] Post warnings:', validation.warnings.join(' | '));
+  const validation = validatePostSeo(post, { strict: false, siteUrl });
+  if (!validation.passed || validation.warnings.length > 0) {
+    console.warn('[SEO] Pre-cleanup validation notes:', [...validation.errors, ...validation.warnings].join(' | '));
   }
 
   return post;
@@ -134,33 +134,32 @@ function normalizePost(raw, cluster, now) {
 async function makePost({ cluster, existingPosts, now = new Date() }) {
   const prompt = buildSeoPrompt({ cluster, existingPosts });
 
-  let raw;
-  let generationMode = 'offline';
+  function finalizePost(candidateRaw, mode) {
+    const post = normalizePost(candidateRaw, cluster, now);
+    post.internalLinks = ensureInternalLinks(post, existingPosts);
+    const finalValidation = validatePostSeo(post, { strict, siteUrl });
+    if (!finalValidation.passed) {
+      if (strict) {
+        throw new Error(`SEO validation failed after internal link cleanup: ${finalValidation.errors.join('; ')}`);
+      }
+      console.warn('[SEO] Post warnings after internal link cleanup:', finalValidation.warnings.join(' | '));
+    }
+    post.generationMode = mode;
+    return post;
+  }
 
   if (!offline) {
     try {
-      raw = await generateWithHermes(prompt);
-      generationMode = 'hermes';
+      const hermesRaw = await generateWithHermes(prompt);
+      return finalizePost(hermesRaw, 'hermes');
     } catch (error) {
-      console.warn('[Hermes] Generation failed; falling back to deterministic offline generation.');
+      console.warn('[Hermes] Generation or SEO validation failed; falling back to deterministic offline generation.');
       console.warn(`[Hermes] ${error.message}`);
-      raw = buildFallbackPost({ cluster, now, existingPosts });
     }
-  } else {
-    raw = buildFallbackPost({ cluster, now, existingPosts });
   }
 
-  const post = normalizePost(raw, cluster, now);
-  post.internalLinks = ensureInternalLinks(post, existingPosts);
-  const finalValidation = validatePostSeo(post, { strict, siteUrl });
-  if (!finalValidation.passed) {
-    if (strict) {
-      throw new Error(`SEO validation failed after internal link cleanup: ${finalValidation.errors.join('; ')}`);
-    }
-    console.warn('[SEO] Post warnings after internal link cleanup:', finalValidation.warnings.join(' | '));
-  }
-  post.generationMode = generationMode;
-  return post;
+  const fallbackRaw = buildFallbackPost({ cluster, now, existingPosts });
+  return finalizePost(fallbackRaw, 'offline');
 }
 
 async function main() {
