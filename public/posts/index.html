@@ -16,6 +16,10 @@
   <meta name="twitter:title" content="Posts | mdevtech Blogs">
   <meta name="twitter:description" content="Browse all AI workflow guides on mdevtech Blogs.">
   <meta name="author" content="muneeb1st">
+  <meta name="theme-color" content="#0f766e">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="shortcut icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/site.webmanifest">
   
   <script>
     if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -38,7 +42,10 @@
 <body>
   <header class="site-header">
     <div class="header-container">
-      <a class="brand" href="/">mdevtech Blogs</a>
+      <a class="brand" href="/" aria-label="mdevtech Blogs home">
+        <img class="brand-mark" src="/logo.svg" alt="" width="28" height="28">
+        <span>mdevtech Blogs</span>
+      </a>
       <div class="nav-wrapper">
         <nav class="top-nav">
           <a href="/posts/">Posts</a>
@@ -92,7 +99,7 @@
   <footer class="site-footer">
     <div class="footer-container">
       <div class="footer-brand-section">
-        <span class="footer-brand">mdevtech Blogs</span>
+        <span class="footer-brand"><img class="footer-mark" src="/logo.svg" alt="" width="24" height="24"> mdevtech Blogs</span>
         <p class="footer-tagline">Evergreen AI tools &amp; workflows for students, freelancers, and small businesses.</p>
       </div>
       <div class="footer-links-section">

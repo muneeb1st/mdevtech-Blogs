@@ -62,6 +62,10 @@ function layout({ title, description, canonical, body, post }) {
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
   <meta name="author" content="${escapeHtml(site.author)}">
+  <meta name="theme-color" content="#0f766e">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="shortcut icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="manifest" href="/site.webmanifest">
   
   <script>
     if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
@@ -84,7 +88,10 @@ function layout({ title, description, canonical, body, post }) {
 <body>
   <header class="site-header">
     <div class="header-container">
-      <a class="brand" href="/">${escapeHtml(site.title)}</a>
+      <a class="brand" href="/" aria-label="${escapeHtml(site.title)} home">
+        <img class="brand-mark" src="/logo.svg" alt="" width="28" height="28">
+        <span>${escapeHtml(site.title)}</span>
+      </a>
       <div class="nav-wrapper">
         <nav class="top-nav">
           <a href="/posts/">Posts</a>
@@ -107,7 +114,7 @@ function layout({ title, description, canonical, body, post }) {
   <footer class="site-footer">
     <div class="footer-container">
       <div class="footer-brand-section">
-        <span class="footer-brand">${escapeHtml(site.title)}</span>
+        <span class="footer-brand"><img class="footer-mark" src="/logo.svg" alt="" width="24" height="24"> ${escapeHtml(site.title)}</span>
         <p class="footer-tagline">Evergreen AI tools &amp; workflows for students, freelancers, and small businesses.</p>
       </div>
       <div class="footer-links-section">
