@@ -1,4 +1,6 @@
-# Run from `crontab -e` after replacing paths if needed.
-# Generates a new Hermes/SEO post and rebuilds the static site every 12 hours.
+# AWS/Linux cron example.
+# Run from `crontab -e` after replacing the repo path if needed.
+# This script pulls latest main, runs Hermes generation, strict build/audit,
+# commits changed content/public output, and pushes to GitHub for Vercel deploy.
 
-0 */12 * * * cd /home/ubuntu/ai-auto-blog && /usr/bin/env npm run generate && /usr/bin/env npm run build && /usr/bin/env npm run audit:seo >> /home/ubuntu/ai-auto-blog/automation/cron.log 2>&1
+0 */12 * * * MDEVTECH_REPO_DIR=/home/ubuntu/mdevtech-Blogs /bin/bash /home/ubuntu/mdevtech-Blogs/automation/run-aws-cron.sh

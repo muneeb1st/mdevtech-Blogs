@@ -1,8 +1,6 @@
 name: Auto Blog
 
 on:
-  schedule:
-    - cron: "0 */12 * * *"
   workflow_dispatch:
 
 permissions:
@@ -19,7 +17,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run generate
-      - run: npm run build
+      - run: npm run build:strict
       - run: npm run audit:seo:strict
       - name: Commit generated blog update
         run: |
