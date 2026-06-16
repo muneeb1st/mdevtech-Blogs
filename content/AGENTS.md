@@ -38,6 +38,9 @@ Each post JSON must include:
 - Keep the niche focused on automatable AI workflows for students, freelancers, and small businesses.
 - Use clear headings, short paragraphs, practical checklists, FAQ sections, and internal links.
 - Use keyword clusters to target long-tail ranking opportunities, not generic high-competition terms.
+- Every generated post must include a copy-paste prompt or prompt template, verification guidance, a final checklist, mistakes to avoid, and a compact tool comparison table.
+- Posts must be topic-specific and distinct from existing posts. Do not reuse the same body examples or paragraphs with only the keyword swapped.
+- Internal links must point to related posts or future planned slugs and must never point to the current post.
 
 ## Verification
 

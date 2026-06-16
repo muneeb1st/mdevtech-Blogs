@@ -3,7 +3,7 @@ import 'dotenv/config';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 import { ensureDir, escapeHtml, formatDate, PUBLIC_DIR, readPosts, ROOT } from './lib.mjs';
-import { validatePostSeo } from './seo/validator.mjs';
+import { validatePostCollection, validatePostSeo } from './seo/validator.mjs';
 
 const site = {
   title: 'mdevtech Blogs',
@@ -14,6 +14,7 @@ const site = {
   googleTagId: usableEnvValue(process.env.GOOGLE_TAG_ID || process.env.GOOGLE_ANALYTICS_ID || process.env.NEXT_PUBLIC_GA_ID || ''),
   googleSiteVerification: usableEnvValue(process.env.GSC_VERIFICATION || process.env.GOOGLE_SITE_VERIFICATION || process.env.GOOGLE_SEARCH_CONSOLE_VERIFICATION || '')
 };
+const strictSeo = process.argv.includes('--strict') || process.env.STRICT_SEO === '1';
 
 function usableEnvValue(value = '') {
   const trimmed = String(value).trim();
@@ -491,10 +492,10 @@ async function build() {
   for (const post of posts) {
     const dir = path.join(PUBLIC_DIR, 'posts', post.slug);
     await ensureDir(dir);
-    const validation = validatePostSeo(post, { strict: process.env.STRICT_SEO === '1' });
+    const validation = validatePostSeo(post, { strict: strictSeo, siteUrl: site.baseUrl });
     report.summary.errors += validation.errors.length;
     report.summary.warnings += validation.warnings.length;
-    report.posts.push({ slug: post.slug, ...validation });
+    report.posts.push({ slug: post.slug, seoScore: post.seoScore, ...validation });
 
     const body = `<article class="post">
       ${breadcrumbs(post.title)}
@@ -541,10 +542,19 @@ async function build() {
   await writeRobots(posts);
   await writeFeedJson(posts);
   await writeOpenSearch();
+
+  const collectionValidation = validatePostCollection(posts, { strict: strictSeo });
+  report.collection = collectionValidation;
+  report.summary.errors += collectionValidation.errors.length;
+  report.summary.warnings += collectionValidation.warnings.length;
+
   await fs.writeFile(path.join(PUBLIC_DIR, 'seo-report.json'), JSON.stringify(report, null, 2));
 
   console.log(`Built ${posts.length} post(s) into ${PUBLIC_DIR}`);
   console.log(`SEO report: ${report.summary.errors} errors, ${report.summary.warnings} warnings`);
+  if (strictSeo && report.summary.errors > 0) {
+    throw new Error(`Strict SEO build failed with ${report.summary.errors} error(s).`);
+  }
 }
 
 async function copyStaticFiles() {

@@ -20,7 +20,7 @@ jobs:
       - run: npm ci
       - run: npm run generate
       - run: npm run build
-      - run: npm run audit:seo
+      - run: npm run audit:seo:strict
       - name: Commit generated blog update
         run: |
           git config user.name "mdevtech-auto-blog"
@@ -37,4 +37,5 @@ jobs:
       GSC_VERIFICATION: ${{ secrets.GSC_VERIFICATION }}
       GOOGLE_SITE_VERIFICATION: ${{ secrets.GOOGLE_SITE_VERIFICATION }}
       HERMES_TIMEOUT_MS: 600000
+      PREFER_LOW_DIFFICULTY_KEYWORDS: "1"
       STRICT_SEO: "1"

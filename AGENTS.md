@@ -24,6 +24,9 @@ The goal is to maximize Google ranking potential through keyword targeting, Herm
 - Hermes must receive strict SEO instructions: research the topic, target long-tail ranking intent, create original practical content, include FAQ, internal links, meta fields, and JSON-LD-ready fields.
 - Avoid scraped or copyrighted content. Posts must be original, practical, evergreen, and human-checkable.
 - Google #1 cannot be guaranteed. The system optimizes ranking factors: keyword intent, quality, technical SEO, internal links, structured data, indexing, and consistency.
+- Autonomous publishing must prefer low-difficulty long-tail workflow keywords unless `PREFER_LOW_DIFFICULTY_KEYWORDS=0` is explicitly set.
+- Strict SEO validation must block generic AI filler, duplicated post bodies, missing copy-paste prompts, missing verification guidance, missing checklist sections, missing tool comparison tables, self-links, weak internal linking, bad canonicals, and weak structured data.
+- Cron/CI must run strict SEO audit before committing generated content.
 - Keep dependencies minimal. Prefer Node.js standard library unless a dependency clearly buys leverage.
 - Supabase credentials must never be committed. Use `.env` locally and Vercel/Supabase secrets in CI.
 

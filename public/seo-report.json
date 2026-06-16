@@ -1,13 +1,27 @@
 {
-  "generatedAt": "2026-06-16T02:10:25.796Z",
+  "generatedAt": "2026-06-16T02:22:25.732Z",
   "summary": {
-    "posts": 2,
+    "posts": 3,
     "errors": 0,
     "warnings": 0
   },
   "posts": [
     {
+      "slug": "2026-06-16-00-ai-faq-generator-for-website-workflow",
+      "seoScore": 0.9,
+      "passed": true,
+      "errors": [],
+      "warnings": [],
+      "metrics": {
+        "titleLength": 63,
+        "metaTitleLength": 60,
+        "metaDescriptionLength": 156,
+        "bodyWordCount": 1662
+      }
+    },
+    {
       "slug": "2026-06-16-00-ai-client-proposal-template-workflow",
+      "seoScore": 0.9,
       "passed": true,
       "errors": [],
       "warnings": [],
@@ -20,6 +34,7 @@
     },
     {
       "slug": "2026-06-15-12-ai-social-media-content-calendar-workflow",
+      "seoScore": 0.9,
       "passed": true,
       "errors": [],
       "warnings": [],
@@ -30,5 +45,10 @@
         "bodyWordCount": 1697
       }
     }
-  ]
+  ],
+  "collection": {
+    "passed": true,
+    "errors": [],
+    "warnings": []
+  }
 }

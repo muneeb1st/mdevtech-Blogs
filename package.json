@@ -6,12 +6,12 @@
   "description": "Autonomous SEO-first blog powered by Hermes Agent, Supabase, and Vercel.",
   "scripts": {
     "generate": "node src/generator.mjs",
-    "generate:strict": "STRICT_SEO=1 node src/generator.mjs --strict",
+    "generate:strict": "node src/generator.mjs --strict",
     "build": "node src/build.mjs",
-    "build:strict": "STRICT_SEO=1 node src/build.mjs",
+    "build:strict": "node src/build.mjs --strict",
     "dev": "node src/server.mjs",
     "audit:seo": "node scripts/audit-seo.mjs",
-    "audit:seo:strict": "STRICT_SEO=1 node scripts/audit-seo.mjs --strict",
+    "audit:seo:strict": "node scripts/audit-seo.mjs --strict",
     "preview:seo": "npm run build && npm run audit:seo"
   },
   "engines": {

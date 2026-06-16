@@ -2,7 +2,8 @@
 import 'dotenv/config';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { PUBLIC_DIR } from '../src/lib.mjs';
+import { PUBLIC_DIR, readPosts } from '../src/lib.mjs';
+import { validatePostCollection, validatePostSeo } from '../src/seo/validator.mjs';
 
 const args = new Set(process.argv.slice(2));
 const strict = args.has('--strict') || process.env.STRICT_SEO === '1';
@@ -40,6 +41,7 @@ async function main() {
   const report = JSON.parse(await fs.readFile(reportPath, 'utf8'));
   const sitemap = await fs.readFile(sitemapPath, 'utf8');
   const robots = await fs.readFile(robotsPath, 'utf8');
+  const posts = await readPosts();
 
   const baseUrl = usableSiteUrl(process.env.SITE_URL, 'https://mdevtech.vercel.app');
   add('seo-report.json exists', true);
@@ -53,12 +55,20 @@ async function main() {
   add('posts have validation results', postReports.length > 0);
   add('all posts pass required validation', postReports.every((p) => p.passed));
   add('SEO errors count', report.summary.errors === 0);
+  add('all post URLs are in sitemap', posts.every((post) => sitemap.includes(`<loc>${baseUrl}/posts/${post.slug}/</loc>`)));
+  add('robots points to canonical sitemap', robots.includes(`Sitemap: ${baseUrl}/sitemap.xml`));
+
+  const livePostReports = posts.map((post) => ({ slug: post.slug, seoScore: post.seoScore, ...validatePostSeo(post, { strict, siteUrl: baseUrl }) }));
+  add('source posts pass current quality gates', livePostReports.every((post) => post.passed), livePostReports.filter((post) => !post.passed).map((post) => post.slug).join(', '));
+
+  const collectionReport = validatePostCollection(posts, { strict });
+  add('collection passes originality and long-tail checks', collectionReport.passed, [...collectionReport.errors, ...collectionReport.warnings].join(' | '));
 
   if (strict) {
-    const weakPosts = postReports.filter((post) => !post.passed || post.warnings?.length);
+    const weakPosts = livePostReports.filter((post) => !post.passed || post.warnings?.length);
     add('strict SEO has no weak posts', weakPosts.length === 0, weakPosts.map((p) => p.slug).join(', '));
-    const lowScores = postReports.filter((post) => Number(post.seoScore || 0) < 0.85);
-    add('strict SEO scores are 0.85+', lowScores.length === 0, lowScores.map((p) => p.slug).join(', '));
+    const lowScores = livePostReports.filter((post) => Number(post.seoScore || 0) < 0.88);
+    add('strict SEO scores are 0.88+', lowScores.length === 0, lowScores.map((p) => p.slug).join(', '));
   }
 
   const errors = checks.filter((c) => !c.pass);

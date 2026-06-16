@@ -17,7 +17,29 @@ const strict = args.has('--strict') || process.env.STRICT_SEO === '1';
 
 const niche = 'AI tools and workflows for students, freelancers, and small local businesses';
 const author = 'muneeb1st';
-const siteUrl = process.env.SITE_URL || 'https://mdevtech.vercel.app';
+const siteUrl = usableSiteUrl(process.env.SITE_URL, 'https://mdevtech.vercel.app');
+
+function usableEnvValue(value = '') {
+  const trimmed = String(value).trim();
+  if (!trimmed) return '';
+  if (/^(YOUR|REPLACE)_/i.test(trimmed)) return '';
+  if (/X{6,}/i.test(trimmed)) return '';
+  return trimmed;
+}
+
+function usableSiteUrl(value, fallback) {
+  const candidate = usableEnvValue(value);
+  if (!candidate) return fallback;
+  try {
+    const parsed = new URL(candidate);
+    const host = parsed.hostname.toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return fallback;
+    if (!['http:', 'https:'].includes(parsed.protocol)) return fallback;
+    return parsed.origin.replace(/\/$/, '');
+  } catch {
+    return fallback;
+  }
+}
 
 function readArgValue(name) {
   const equalsValue = rawArgs.find((arg) => arg.startsWith(`${name}=`));
@@ -98,7 +120,7 @@ function normalizePost(raw, cluster, now) {
     claimsNeedingHumanCheck: Array.isArray(raw.claimsNeedingHumanCheck) ? raw.claimsNeedingHumanCheck : ['Verify tool names, prices, dates, and statistics before publishing.']
   };
 
-  const validation = validatePostSeo(post, { strict });
+  const validation = validatePostSeo(post, { strict, siteUrl });
   if (!validation.passed) {
     if (strict) {
       throw new Error(`SEO validation failed: ${validation.errors.join('; ')}`);
@@ -130,7 +152,7 @@ async function makePost({ cluster, existingPosts, now = new Date() }) {
 
   const post = normalizePost(raw, cluster, now);
   post.internalLinks = ensureInternalLinks(post, existingPosts);
-  const finalValidation = validatePostSeo(post, { strict });
+  const finalValidation = validatePostSeo(post, { strict, siteUrl });
   if (!finalValidation.passed) {
     if (strict) {
       throw new Error(`SEO validation failed after internal link cleanup: ${finalValidation.errors.join('; ')}`);

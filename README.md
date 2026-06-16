@@ -79,6 +79,7 @@ Optional:
 - `HERMES_PROVIDER`
 - `HERMES_SKILLS`
 - `HERMES_TOOLSETS`
+- `PREFER_LOW_DIFFICULTY_KEYWORDS=1`
 - `GOOGLE_TAG_ID` or `GOOGLE_ANALYTICS_ID`
 - `GOOGLE_SITE_VERIFICATION` or `GSC_VERIFICATION`
 
@@ -106,7 +107,10 @@ Run:
 
 ```bash
 npm run audit:seo
+npm run audit:seo:strict
 ```
+
+Strict SEO mode is the cron gate. It blocks posts that are too generic, too similar to existing posts, missing internal links, missing copy-paste prompts, missing verification/checklist sections, missing tool comparison tables, using bad canonicals, or using weak structured data.
 
 ## Google Search Console
 

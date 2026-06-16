@@ -15,9 +15,13 @@ export async function loadKeywordClusters() {
 
 export function selectKeywordCluster(slot, clusters) {
   if (!clusters.length) throw new Error('No keyword clusters found.');
+  const preferred = process.env.PREFER_LOW_DIFFICULTY_KEYWORDS === '0'
+    ? clusters
+    : clusters.filter((cluster) => String(cluster.difficulty || '').toLowerCase() === 'low');
+  const pool = preferred.length ? preferred : clusters;
   let hash = 0;
   for (const char of slot) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
-  return clusters[hash % clusters.length];
+  return pool[hash % pool.length];
 }
 
 export function buildTopicFromCluster(cluster) {

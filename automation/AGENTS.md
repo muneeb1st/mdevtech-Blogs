@@ -24,6 +24,8 @@ Contains scheduler examples, Supabase schema, and deployment configuration for a
 - Default schedule: every 12 hours.
 - Keep commands explicit and easy to copy.
 - Use `npm run audit:seo` before enabling live scheduled publishing.
+- Scheduled publishing must keep `STRICT_SEO=1` and `PREFER_LOW_DIFFICULTY_KEYWORDS=1` unless a human intentionally overrides them.
+- Scheduled publishing must run `npm run audit:seo:strict` before committing generated posts or public output.
 
 ## Verification
 
