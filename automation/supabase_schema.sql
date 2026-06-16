@@ -46,6 +46,8 @@ create table if not exists content_versions (
   created_at timestamptz default now()
 );
 
+create index if not exists content_versions_post_id_idx on content_versions(post_id);
+
 create table if not exists publish_events (
   id uuid primary key default gen_random_uuid(),
   post_id uuid references posts(id) on delete cascade,
@@ -54,44 +56,72 @@ create table if not exists publish_events (
   created_at timestamptz default now()
 );
 
-create or replace function set_updated_at()
+create index if not exists publish_events_post_id_idx on publish_events(post_id);
+
+create or replace function public.set_updated_at()
 returns trigger as $$
 begin
   new.updated_at = now();
   return new;
 end;
-$$ language plpgsql;
+$$ language plpgsql set search_path = '';
 
+drop trigger if exists posts_updated_at on posts;
 create trigger posts_updated_at
 before update on posts
 for each row execute function set_updated_at();
 
--- RLS
+-- Data API grants and RLS
+alter default privileges for role postgres in schema public
+  revoke select, insert, update, delete on tables from anon, authenticated;
+
+revoke all privileges on table posts from anon, authenticated;
+revoke all privileges on table seo_keywords from anon, authenticated;
+revoke all privileges on table content_versions from anon, authenticated;
+revoke all privileges on table publish_events from anon, authenticated;
+
+grant select on table posts to anon, authenticated;
+grant select, insert, update, delete on table posts to service_role;
+grant select, insert, update, delete on table seo_keywords to service_role;
+grant select, insert, update, delete on table content_versions to service_role;
+grant select, insert, update, delete on table publish_events to service_role;
+
 alter table posts enable row level security;
 alter table seo_keywords enable row level security;
 alter table content_versions enable row level security;
 alter table publish_events enable row level security;
 
+drop policy if exists "Published posts are readable by everyone" on posts;
+drop policy if exists "Service role can manage posts" on posts;
+drop policy if exists "Service role can manage keywords" on seo_keywords;
+drop policy if exists "Service role can manage versions" on content_versions;
+drop policy if exists "Service role can manage publish events" on publish_events;
+
 create policy "Published posts are readable by everyone"
 on posts for select
+to anon, authenticated
 using (status = 'published');
 
 create policy "Service role can manage posts"
 on posts for all
+to service_role
 using (true)
 with check (true);
 
 create policy "Service role can manage keywords"
 on seo_keywords for all
+to service_role
 using (true)
 with check (true);
 
 create policy "Service role can manage versions"
 on content_versions for all
+to service_role
 using (true)
 with check (true);
 
 create policy "Service role can manage publish events"
 on publish_events for all
+to service_role
 using (true)
 with check (true);

@@ -18,7 +18,7 @@ Niche: ${SITE_CONTEXT.niche}
 Tone: ${SITE_CONTEXT.tone}
 
 Mission:
-Create one original, evergreen, SEO-ready blog post that can realistically rank for the target long-tail keyword cluster below. Do not copy from websites. Do not invent fake case studies. Do not use generic motivational fluff. Research from your own knowledge and produce useful, practical content.
+Create one original, evergreen, SEO-ready blog post that can realistically compete for the target long-tail keyword cluster below. Do not copy from websites. Do not invent fake case studies, rankings, statistics, prices, or competitor claims. Do not use generic motivational fluff. Produce useful, practical content that gives the reader a workflow they can run today.
 
 Target keyword cluster:
 ${JSON.stringify(cluster, null, 2)}
@@ -31,14 +31,17 @@ SEO rules:
 2. Target clear search intent. Explain who the article helps and what problem it solves.
 3. Use long-tail keywords naturally. Do not keyword-stuff.
 4. Write for humans first, Google second.
-5. Include practical steps, examples, mistakes to avoid, tools, and a short checklist.
-6. Include an FAQ with 4-6 real questions searchers may ask.
-7. Include 2-4 internal link suggestions to existing or future posts. Each suggestion must have a 'slug' and 'anchor'.
-8. Add 3-6 tags.
-9. Add 'claimsNeedingHumanCheck' for facts, tool names, prices, dates, statistics, or claims that should be verified.
-10. Add an 'seoScore' from 0 to 1. Aim for 0.85+.
-11. Keep the article 1100-1600 words when possible. If Hermes output limits apply, keep it dense and useful.
-12. Avoid fake certainty. If you are not sure, say what needs verification.
+5. Put the direct answer and recommended workflow in the first 150 words.
+6. Include practical steps, copy-paste prompt templates, examples, mistakes to avoid, tool tradeoffs, and a short checklist.
+7. Include one compact comparison table when useful.
+8. Include an FAQ with 4-6 real questions searchers may ask.
+9. Include 2-4 internal link suggestions to existing or future posts. Each suggestion must have a 'slug' and 'anchor'.
+10. Include a "what to verify before using this" section for facts, pricing, tool limits, and risky claims.
+11. Add 3-6 tags.
+12. Add 'claimsNeedingHumanCheck' for facts, tool names, prices, dates, statistics, or claims that should be verified.
+13. Add an 'seoScore' from 0 to 1. Aim for 0.88+.
+14. Keep the article 1200-1800 words when possible. If Hermes output limits apply, keep it dense and useful.
+15. Avoid fake certainty. If you are not sure, say what needs verification.
 
 Output must be valid JSON only. No markdown fences. No extra explanation.
 
@@ -52,7 +55,7 @@ Required JSON schema:
   "searchIntent": "informational | commercial investigation | transactional | navigational",
   "audience": "students | freelancers | local business owners | small business owners | self-learners",
   "excerpt": "Short summary under 160 characters",
-  "body": "Markdown article body with H2 headings, practical steps, examples, checklist, and conclusion. Minimum 1100 words.",
+  "body": "Markdown article body with H2 headings, direct answer, practical steps, prompt templates, examples, verification section, checklist, and conclusion. Minimum 1200 words.",
   "faq": [{"question": "Question?", "answer": "Short helpful answer"}],
   "internalLinks": [{"slug": "future-related-slug", "anchor": "Anchor text"}],
   "tags": ["tag"],
@@ -73,8 +76,164 @@ Before writing, silently choose the best ranking angle:
 - tool stack
 - measurable outcome
 - clear FAQ
+- original task-specific examples that are not copied from other sites
 
 Now write the JSON.`;
+}
+
+function sentenceCase(value = '') {
+  return String(value).charAt(0).toUpperCase() + String(value).slice(1);
+}
+
+function renderBullets(items = []) {
+  return items.map((item) => `- ${item}`).join('\n');
+}
+
+function buildFallbackPlan({ cluster, primary, audience, angle }) {
+  const workflow = Array.isArray(cluster.workflow) && cluster.workflow.length
+    ? cluster.workflow
+    : ['Define the task', 'Draft with AI', 'Review the output', 'Save the template'];
+  const tools = Array.isArray(cluster.tools) && cluster.tools.length ? cluster.tools : ['LLM', 'Google Docs', 'Notion'];
+  const primaryLower = primary.toLowerCase();
+
+  if (primaryLower.includes('proposal')) {
+    return {
+      outcomeExamples: [
+        'A six-section proposal for a website redesign lead who already shared goals, budget range, and deadline',
+        'A short discovery-to-proposal outline for a freelance copywriting client',
+        'A reusable scope, timeline, deliverables, and next-step block you can paste into Google Docs',
+        'A polite follow-up email that sends the proposal without sounding automated'
+      ],
+      toolRows: [
+        ['Client brief cleanup', tools[0] || 'LLM', 'Turns messy notes into requirements, risks, questions, and proposal sections'],
+        ['Proposal drafting', tools[1] || 'Google Docs', 'Keeps the final document editable and easy to personalize'],
+        ['Template library', tools[2] || 'Notion', 'Stores winning sections, objections, and client-specific examples'],
+        ['Signature or approval', tools[3] || 'DocuSign', 'Moves the client from review to clear next action']
+      ],
+      steps: [
+        {
+          title: workflow[0] || 'Write the client brief',
+          detail: 'Start by turning the client conversation into a clean brief. Include the client goal, the business problem, the requested deliverables, known constraints, deadline, decision maker, and any phrases the client used. This gives AI real context instead of forcing it to guess. For a freelancer, this step matters because the proposal should sound like a response to the client, not a generic sales page.',
+          prompt: `Turn these discovery notes into a clean client brief for a proposal. Separate goals, deliverables, timeline, budget signals, objections, missing questions, and success criteria. Keep the wording plain and do not invent details.\n\nNotes:\n[paste notes]`,
+          check: 'Make sure every claim in the brief came from the client or your own verified notes.'
+        },
+        {
+          title: workflow[1] || 'Create proposal sections',
+          detail: 'Ask AI for a structure before asking for polished copy. A strong proposal usually needs a summary, problem statement, recommended approach, deliverables, timeline, investment, proof or relevant experience, and next steps. Keeping the sections consistent makes the template reusable while leaving enough room for customization.',
+          prompt: `Create a proposal outline for this client brief. Use these sections: summary, problem, recommended approach, deliverables, timeline, investment, proof, assumptions, next steps. Add one sentence explaining what each section must prove to the client.`,
+          check: 'Remove sections that do not match the client stage. A warm referral may need less proof than a cold lead.'
+        },
+        {
+          title: workflow[2] || 'Add timeline and pricing',
+          detail: 'Use AI to draft options, but keep pricing decisions human. Ask for clear package language, assumptions, exclusions, and timeline milestones. This prevents scope confusion later. If you offer one package, ask AI to sharpen why that package is the best fit. If you offer three options, make the tradeoffs easy to compare.',
+          prompt: `Draft the timeline, deliverables, assumptions, and pricing explanation for this proposal. Use confident but honest language. Do not invent guarantees. Make exclusions clear so the client understands what is not included.`,
+          check: 'Verify numbers, dates, taxes, revision limits, licensing, and payment terms before sending.'
+        },
+        {
+          title: workflow[3] || 'Personalize before sending',
+          detail: 'The last pass should add the client-specific details that AI cannot know by default: their brand language, exact pain points, names, objections, and preferred next step. This is where the proposal stops sounding like a template. Read it aloud once and remove anything you would not naturally say to the client.',
+          prompt: `Rewrite this proposal so it sounds specific to the client. Keep the structure, but add references to their goal, their audience, their constraints, and the next decision they need to make. Flag any sentence that sounds generic.`,
+          check: 'Send only after you can point to at least five details that are unique to this client.'
+        }
+      ],
+      mistakes: [
+        'Sending the first AI draft without adding client-specific proof',
+        'Letting AI invent outcomes, timelines, guarantees, or pricing logic',
+        'Using vague deliverables like "strategy" without defining what the client receives',
+        'Hiding assumptions and exclusions until after the client accepts',
+        'Forgetting a single clear next step at the end of the proposal'
+      ],
+      verification: [
+        'Client name, project scope, dates, price, taxes, and payment schedule',
+        'Claims about previous work, results, certifications, or availability',
+        'Legal language, ownership rights, cancellation terms, and revision limits',
+        'Any tool-generated promise that sounds like a guaranteed business outcome'
+      ]
+    };
+  }
+
+  if (primaryLower.includes('social media') || primaryLower.includes('content calendar')) {
+    return {
+      outcomeExamples: [
+        'A seven-day Instagram and Facebook calendar for a local bakery promoting weekend specials',
+        'Three post angles for a service business that wants calls, not just likes',
+        'Caption drafts that reuse real customer questions, offers, and seasonal moments',
+        'A weekly review checklist for checking accuracy, tone, and scheduling'
+      ],
+      toolRows: [
+        ['Idea generation', tools[0] || 'LLM', 'Turns offers, FAQs, and events into post angles'],
+        ['Scheduling', tools[1] || 'Meta Business Suite', 'Publishes Facebook and Instagram posts from one place'],
+        ['Design', tools[2] || 'Canva', 'Creates simple branded visuals without a design team'],
+        ['Queue management', tools[3] || 'Buffer', 'Helps keep posts moving when one channel is not enough']
+      ],
+      steps: [
+        {
+          title: workflow[0] || 'List offers',
+          detail: 'Start with real business inputs: current offers, opening hours, seasonal events, customer questions, photos you already have, and products or services with good margins. AI performs better when it gets raw material from the business instead of guessing what customers care about.',
+          prompt: `Create a one-week content input list for a local business. Use these offers, FAQs, events, and customer objections. Group ideas by goal: awareness, trust, direct offer, education, and repeat visit.\n\nBusiness notes:\n[paste notes]`,
+          check: 'Remove anything that mentions an offer, date, product, or policy you cannot verify.'
+        },
+        {
+          title: workflow[1] || 'Generate post angles',
+          detail: 'Ask AI for angles before full captions. Good angles include customer questions, behind-the-scenes moments, simple comparisons, before-and-after explanations, limited-time offers, and local relevance. Pick the strongest seven before writing captions so the calendar has variety.',
+          prompt: `Generate 12 social media post angles from this business input. For each angle, include the target customer, hook, post format, call to action, and why it fits this week. Avoid generic motivational posts.`,
+          check: 'Keep a mix of helpful, proof-based, local, and offer-driven posts.'
+        },
+        {
+          title: workflow[2] || 'Write captions',
+          detail: 'Now write captions in batches. Give AI the chosen angles, the brand voice, words to avoid, platform, and desired call to action. Ask for shorter captions first; small businesses often need clarity more than cleverness. Save the best lines as reusable caption blocks.',
+          prompt: `Write captions for these seven post angles. Keep them clear, local, and useful. Include a short hook, one useful detail, and one call to action. Avoid hype, fake scarcity, and overused AI phrases.`,
+          check: 'Read each caption as the business owner. If it sounds like a generic brand, rewrite it.'
+        },
+        {
+          title: workflow[3] || 'Schedule and review',
+          detail: 'Before scheduling, check every caption, image, link, tag, and date. Then schedule posts in Meta Business Suite, Buffer, or the tool the business already uses. After the week ends, review which posts got useful actions: messages, calls, saves, comments, or clicks.',
+          prompt: `Create a final review checklist for this one-week calendar. Include accuracy checks, visual checks, scheduling checks, and post-week performance notes.`,
+          check: 'Do not judge only by likes. Track the action the business actually wanted.'
+        }
+      ],
+      mistakes: [
+        'Asking AI for random post ideas without giving offers, FAQs, or local context',
+        'Scheduling captions with wrong dates, hours, prices, or unavailable products',
+        'Posting seven sales posts in a row with no helpful or trust-building content',
+        'Using generic hooks that could belong to any business',
+        'Never reviewing which posts created messages, calls, bookings, or visits'
+      ],
+      verification: [
+        'Opening hours, offer dates, menu/service details, prices, addresses, and phone numbers',
+        'Image rights, brand colors, logos, and customer photo permissions',
+        'Platform rules for promotions, claims, health content, or before-and-after posts',
+        'Whether the call to action matches what staff can actually handle that week'
+      ]
+    };
+  }
+
+  return {
+    outcomeExamples: workflow.map((step) => `${sentenceCase(step)} for a real ${audience} task`).slice(0, 4),
+    toolRows: tools.slice(0, 4).map((tool, index) => [
+      workflow[index] || `Workflow stage ${index + 1}`,
+      tool,
+      'Keeps this stage practical, editable, and easy to verify'
+    ]),
+    steps: workflow.slice(0, 4).map((step, index) => ({
+      title: step,
+      detail: `${sentenceCase(step)} is the stage where the workflow becomes specific. Write the exact input, expected output, owner, deadline, and quality bar before asking AI to help. This keeps the result tied to the real task instead of drifting into generic advice.`,
+      prompt: `Help me with this stage: ${step}. Ask clarifying questions, then produce a usable draft with assumptions, risks, and a verification checklist.`,
+      check: 'Confirm the output matches your real task, audience, and constraints before moving forward.'
+    })),
+    mistakes: [
+      'Starting with a vague prompt and expecting a polished result',
+      'Using a tool because it is popular instead of because it fits the task',
+      'Skipping verification for dates, names, prices, facts, or policies',
+      'Saving no reusable template after the work is done'
+    ],
+    verification: [
+      'Tool names, pricing, limits, and terms',
+      'Facts, dates, names, numbers, citations, and policy-sensitive claims',
+      'Whether the final output matches the audience and channel',
+      'Whether private or client data is safe to upload to the chosen tool'
+    ]
+  };
 }
 
 export function buildFallbackPost({ cluster, now = new Date(), existingPosts = [] }) {
@@ -83,6 +242,21 @@ export function buildFallbackPost({ cluster, now = new Date(), existingPosts = [
   const intent = cluster.searchIntent || 'informational';
   const secondary = (cluster.secondaryKeywords || []).slice(0, 3);
   const angle = cluster.articleAngle || 'practical implementation guide';
+  const plan = buildFallbackPlan({ cluster, primary, audience, angle });
+  const workflowSteps = plan.steps.map((step, index) => `## Step ${index + 1}: ${step.title}
+
+${step.detail}
+
+Copy-paste prompt:
+
+\`\`\`
+${step.prompt}
+\`\`\`
+
+Verification check: ${step.check}
+
+Do not move to the next step until the output can be used by a real person without guessing what you meant. If the draft feels generic, add more source material, examples, constraints, and audience details before asking AI to rewrite it.`).join('\n\n');
+  const toolRows = plan.toolRows.map((row) => `| ${row[0]} | ${row[1]} | ${row[2]} |`).join('\n');
 
   const baseSlug = cluster.slug || primary.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   const slug = baseSlug;
@@ -92,90 +266,67 @@ export function buildFallbackPost({ cluster, now = new Date(), existingPosts = [
   const metaDescription = `Step-by-step ${primary} workflow for ${audience}. Tools, prompt templates, verification checklist, and common mistakes to avoid.`;
   const excerpt = `A practical ${primary} workflow for ${audience}. Tools, prompt templates, and verification checklist included.`;
 
-  const body = `## Why ${primary} matters for ${audience}
+  const body = `## ${primary}: the practical answer
 
-${audience} searching for "${primary}" want a clear, actionable way to get results without wasting time on generic advice. This guide focuses on a practical ${angle} that works with real tools you already have or can access for free. The goal is a repeatable process you can use week after week.
+People searching for "${primary}" need a usable workflow, not another list of AI tools. The best starting point is simple: collect the real inputs, use AI to shape a draft, verify every changing detail, then save the final version as a reusable template. For ${audience}, this guide focuses on ${angle}.
 
 Search intent: ${intent}. The reader is looking for a concrete process they can follow today, not theoretical explanations.
 
-The primary keyword "${primary}" appears in this guide naturally across the title, headings, and body content to match search intent without keyword stuffing.
+The recommended workflow is: gather the raw material, draft one focused output, review it against real-world facts, and store the improved version for the next similar task.
 
 ## Best ranking angle: ${angle}
 
-The highest-value angle is not hype. It is a repeatable process: define the task, use AI for structure and drafts, verify every output, and turn it into a template you reuse. This article gives you that template.
+The highest-value angle is repeatability. One good AI session should not disappear after the task is done. It should become a template, checklist, or saved prompt that makes the next task faster and more consistent.
 
-Most guides fail because they treat AI as a magic wand. The workflow below treats AI as a drafting partner that requires your oversight.
+Use this workflow when you need one of these concrete outcomes:
 
-The best ranking angle for "${primary}" focuses on practical implementation over theory. Searchers want a process they can run today, not a philosophical discussion about AI capabilities. Evidence: the top-ranking pages for this keyword cluster are all how-to guides with step-by-step instructions, tool comparisons, and copy-paste templates.
+${renderBullets(plan.outcomeExamples)}
 
-## Step 1: Define the exact outcome before opening any AI tool
+Most weak AI content fails because it treats the tool as the strategy. The tool is only useful after the task is clear. That is why this guide starts with inputs and verification instead of a giant prompt collection.
 
-Before opening any AI tool, write down one specific result you need this week. Concrete examples:
+## Tool stack for ${primary}
 
-- "A 7-day Instagram content calendar for my bakery, with captions and hashtags"
-- "An outline for a 2,000-word student research paper on renewable energy policy"
-- "A client proposal draft for a $2,000 responsive website redesign project"
-- "A weekly email newsletter structure for my freelance consulting business"
+| Workflow stage | Tool to consider | Why it helps |
+|----------------|------------------|--------------|
+${toolRows}
 
-Vague goals produce vague AI output. Specific goals with clear constraints produce usable drafts.
+Start with the tools you already use. Switching apps is rarely the bottleneck. The bottleneck is usually missing context, unclear constraints, or no review process.
 
-Spend 3-5 minutes on this step. Write the outcome in one sentence. Include format, length, audience, and any must-include elements. This upfront clarity saves 20-30 minutes of back-and-forth prompting later.
+${workflowSteps}
 
-## Step 2: Choose the right AI tool for the specific task
+## What to verify before using this workflow
 
-Different tasks need different tools. Match the tool to the job:
+Check the parts that change over time before using this workflow for school, client, or business work:
 
-| Task type | Recommended primary tool | Why it works |
-|-----------|--------------------------|--------------|
-| Writing drafts (articles, emails, proposals) | ChatGPT, Claude, Gemini | Best reasoning, tone control, and instruction following |
-| Research with citations | Perplexity, NotebookLM | Real sources, not hallucinated references |
-| Data extraction from PDFs/CSVs | Claude, ChatGPT Code Interpreter | Handles messy files, structured output |
-| Visual planning and presentations | Canva Magic Write, Gamma | Slides and graphics from text prompts |
-| Code and automation scripts | Cursor, GitHub Copilot, v0 | Working code, not snippets |
+${renderBullets(plan.verification)}
 
-Start with one primary tool. Add a second only when the first hits a limit. Do not try to master five tools at once.
+Also check current pricing and free-tier limits for any tool you mention. Product limits and feature names change often, so avoid building a client or business process around old assumptions.
 
-The tool choice matters less than the prompt quality. A well-prompted free-tier ChatGPT outperforms a poorly-prompted paid tool every time.
+This verification pass is what separates useful AI-assisted work from risky automation. Keep a short record of what you checked, especially when the output affects a client, customer, school submission, or public business page.
 
-## Step 3: Build a reusable prompt template you can iterate
+## Reusable prompt template for ${primary}
 
 Copy this structure and fill in your specifics. Save it as a text file for reuse:
 
 \`\`\`
 Act as a practical AI workflow assistant for ${audience}.
 
-Context: I need to \${specific_task}.
-Audience: \${who_reads_this}.
-Constraints: \${word_count, tone, format, must-include, must-avoid}.
+Task: I need to use ${primary} for [specific outcome].
+Audience: [who will read or use the output].
+Inputs I have: [notes, links, examples, constraints, offers, dates, client details].
+Must include: [required sections, facts, examples, tone, format].
+Must avoid: [claims, phrases, details, or formats that would be wrong].
 
 Process:
-1. Ask me 2-3 clarifying questions if anything is ambiguous.
-2. Give me a step-by-step workflow with concrete examples.
-3. Include a "mistakes to avoid" section.
-4. End with a copy-paste checklist I can use next time.
+1. Ask up to 3 clarifying questions if a required detail is missing.
+2. Draft the output in the requested format.
+3. Mark assumptions and facts that need verification.
+4. Give me a final checklist before I use or publish it.
 \`\`\`
 
-Key principle: the prompt is a tool you refine over time. Each use teaches you what constraints to add.
+Key principle: the prompt is a working document. After each use, add the missing constraints that would have improved the first draft.
 
-A good template prompt has four parts: role definition, context, constraints, and output specification. Missing any part leads to generic output.
-
-## Step 4: Run, verify, refine - never publish raw AI output
-
-Every draft needs a human verification pass. Check each of these:
-
-- Fact check: tool names, pricing tiers, API limits, feature availability, dates, statistics
-- Tone check: does it sound like you or a generic bot? Rewrite generic phrases.
-- Completeness check: are all steps actionable? Are examples realistic?
-- Formatting check: proper headings, bullet points, code blocks where needed
-- Safety check: no hallucinated features, no made-up case studies
-
-Spend 5-15 minutes on verification. It separates useful output from noise.
-
-Verification is not optional. It is the step that turns AI drafts into publishable work. Skip it, and you publish hallucinations.
-
-## Step 5: Save the verified prompt and output as a template
-
-Once verified, save the prompt + your corrected output in Notion, Obsidian, or a simple text file. Next time you face a similar task, you start from 80% done instead of zero.
+## Save the verified output as a template
 
 Template structure:
 
@@ -186,47 +337,34 @@ Template structure:
 # Checklist: [the reusable checklist]
 \`\`\`
 
-Building a template library compounds your efficiency. After 10-15 templates, most new tasks map to an existing pattern.
+Store the prompt, final output, and checklist together. Tag it with "${primary}", the audience, the channel, and the use case. Next time, start from the saved version and update only the details that changed.
 
-Organize templates by task type: writing, research, coding, visual, automation. Tag each with the primary keyword and audience. This makes retrieval fast when you need it.
-
-## Tools mentioned (no affiliate links, verify current pricing)
-
-- LLMs: ChatGPT (OpenAI), Claude (Anthropic), Gemini (Google) - all have free tiers
-- Research: Perplexity, NotebookLM - free tiers available
-- Writing: Notion AI, Lex, Google Docs with Gemini
-- Visual: Canva (free tier), Gamma (free tier), Napkin.ai
-- Automation: Zapier, Make, n8n - free tiers with limits
-- Code: Cursor (free tier), v0 (free tier), GitHub Copilot (free for students)
-
-All have free tiers sufficient for individual use. Verify current limits before relying on them for client work.
-
-Pricing and features change monthly. The free tier that works today may have different limits next quarter.
+The saved version should include your edits, not only the original AI draft. That way the template captures your judgment, preferred wording, and known constraints. Over time, this becomes a practical library of proven workflows rather than a folder of raw prompts.
 
 ## Common mistakes to avoid
 
-- Asking "write me a blog post" without context, constraints, or examples
-- Accepting the first AI output without any verification pass
-- Using AI for research without checking the cited sources
-- Targeting generic keywords like "AI tools" instead of specific workflows
-- Skipping the checklist step and hoping quality emerges
-- Publishing without a human review pass
-- Using five tools when one well-prompted tool suffices
-- Over-engineering the prompt when a simple instruction works
+${renderBullets(plan.mistakes)}
 
-Each mistake above has a corresponding fix in the workflow above. The workflow is the antidote to these patterns.
+Each mistake has a simple fix: add more real context, ask for assumptions to be marked, verify details before use, and keep the final output tied to a clear action.
 
-## Final checklist before publishing
+When the output disappoints you, diagnose the workflow before blaming the tool. Most weak results trace back to missing inputs, unclear audience, no examples, or a skipped review step. Fixing those basics usually improves the next draft immediately.
 
-- [ ] Does the article answer the exact search intent for "${primary}"?
-- [ ] Is the primary keyword "${primary}" used naturally in title, H2, meta title, and first 100 words?
-- [ ] Are there at least 4 practical steps with concrete examples?
+## Final checklist before publishing or sending
+
+- [ ] Does the output answer the exact search intent or task behind "${primary}"?
+- [ ] Is the primary keyword "${primary}" used naturally in the title, H2, meta title, and first 100 words?
+- [ ] Are the examples specific to ${audience} instead of generic AI advice?
 - [ ] Are all claims verified or marked for human check?
-- [ ] Is there a clear next step for the reader to take today?
+- [ ] Is there a clear next step the reader can take today?
 - [ ] Are internal links added to related guides?
-- [ ] Is the word count above 1100?
+- [ ] Is the final version saved as a reusable template?
 - [ ] Does the FAQ address real searcher questions?
-- [ ] Are AI telltale phrases removed (e.g., generic transitions, hype words, filler phrases)?
+
+## Bottom line
+
+${sentenceCase(primary)} works best when it is treated as a repeatable operating process. Define the input, create a focused draft, verify the risky details, and save the improved result. That is what makes the workflow useful beyond one AI chat.
+
+For ranking and reader trust, the same rule applies: publish the specific process, not generic AI enthusiasm. A reader should leave with a prompt they can run, a checklist they can trust, and a clear sense of what still needs human review.
 
 ### Related guides on mdevtech Blogs
 
@@ -234,9 +372,7 @@ ${existingPosts.length > 0
   ? existingPosts.slice(0, 3).map((p) => `- [${p.title}](/posts/${p.slug}/)`).join('\n')
   : '- [AI tools for students: note-taking and research workflow](/posts/ai-tools-students-note-taking-research/)\n- [AI proposal writing workflow for freelancers](/posts/ai-proposal-writing-freelancers/)\n- [Local business AI content calendar](/posts/ai-content-calendar-local-business/)'}
 
----
-
-*This article was generated by the mdevtech autonomous SEO system. All claims marked for verification should be checked before relying on them for business decisions.*`;
+`;
 
   const relatedPosts = existingPosts.slice(0, 2).map((p) => ({
     slug: p.slug,

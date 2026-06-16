@@ -9,16 +9,38 @@ const site = {
   title: 'mdevtech Blogs',
   description: 'Practical AI tools and workflows for students, freelancers, and small local businesses.',
   author: 'muneeb1st',
-  baseUrl: (process.env.SITE_URL || 'https://mdevtech.vercel.app').replace(/\/$/, ''),
+  baseUrl: usableSiteUrl(process.env.SITE_URL, 'https://mdevtech.vercel.app'),
   image: '/og-default.png',
-  googleAnalyticsId: process.env.GOOGLE_ANALYTICS_ID || process.env.NEXT_PUBLIC_GA_ID || '',
-  googleSiteVerification: process.env.GOOGLE_SITE_VERIFICATION || process.env.GOOGLE_SEARCH_CONSOLE_VERIFICATION || '',
-  googleAdsenseId: process.env.GOOGLE_ADSENSE_ID || ''
+  googleTagId: usableEnvValue(process.env.GOOGLE_TAG_ID || process.env.GOOGLE_ANALYTICS_ID || process.env.NEXT_PUBLIC_GA_ID || ''),
+  googleSiteVerification: usableEnvValue(process.env.GSC_VERIFICATION || process.env.GOOGLE_SITE_VERIFICATION || process.env.GOOGLE_SEARCH_CONSOLE_VERIFICATION || '')
 };
+
+function usableEnvValue(value = '') {
+  const trimmed = String(value).trim();
+  if (!trimmed) return '';
+  if (/^(YOUR|REPLACE)_/i.test(trimmed)) return '';
+  if (/X{6,}/i.test(trimmed)) return '';
+  return trimmed;
+}
+
+function usableSiteUrl(value, fallback) {
+  const candidate = usableEnvValue(value);
+  if (!candidate) return fallback;
+  try {
+    const parsed = new URL(candidate);
+    const host = parsed.hostname.toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return fallback;
+    if (!['http:', 'https:'].includes(parsed.protocol)) return fallback;
+    return parsed.origin.replace(/\/$/, '');
+  } catch {
+    return fallback;
+  }
+}
 
 function layout({ title, description, canonical, body, post }) {
   const articleJsonLd = post ? buildArticleJsonLd(post) : '';
   const faqJsonLd = post?.faq?.length ? buildFaqJsonLd(post) : '';
+  const siteJsonLd = !post ? buildSiteJsonLd(canonical) : '';
   const robots = post?.status === 'archived' ? '<meta name="robots" content="noindex, follow">' : '';
 
   return `<!doctype html>
@@ -50,17 +72,16 @@ function layout({ title, description, canonical, body, post }) {
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,100..1000;1,9..40,100..1000&family=DM+Serif+Display&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
   <link rel="alternate" type="application/rss+xml" title="${escapeHtml(site.title)}" href="/rss.xml">
   ${renderGoogleTags()}
+  ${siteJsonLd}
   ${articleJsonLd}
   ${faqJsonLd}
 </head>
 <body>
   <header class="site-header">
-    <span class="corner-cross tl">+</span><span class="corner-cross tr">+</span>
-    <span class="corner-cross bl">+</span><span class="corner-cross br">+</span>
     <div class="header-container">
       <a class="brand" href="/">${escapeHtml(site.title)}</a>
       <div class="nav-wrapper">
@@ -70,11 +91,11 @@ function layout({ title, description, canonical, body, post }) {
           <a href="/contact/">Contact</a>
         </nav>
         <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
-          <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="sun-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="4"></circle>
             <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
           </svg>
-          <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg class="moon-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
           </svg>
         </button>
@@ -83,12 +104,10 @@ function layout({ title, description, canonical, body, post }) {
   </header>
   <main>${body}</main>
   <footer class="site-footer">
-    <span class="corner-cross tl">+</span><span class="corner-cross tr">+</span>
-    <span class="corner-cross bl">+</span><span class="corner-cross br">+</span>
     <div class="footer-container">
       <div class="footer-brand-section">
         <span class="footer-brand">${escapeHtml(site.title)}</span>
-        <p class="footer-tagline">Evergreen AI tools & workflows for students, freelancers, and small businesses.</p>
+        <p class="footer-tagline">Evergreen AI tools &amp; workflows for students, freelancers, and small businesses.</p>
       </div>
       <div class="footer-links-section">
         <div class="footer-column">
@@ -127,6 +146,10 @@ function layout({ title, description, canonical, body, post }) {
 </html>`;
 }
 
+function nodeDivider() {
+  return `<div class="node-divider" aria-hidden="true"><span></span></div>`;
+}
+
 function buildArticleJsonLd(post) {
   const json = {
     '@context': 'https://schema.org',
@@ -141,6 +164,30 @@ function buildArticleJsonLd(post) {
     dateModified: post.date,
     author: { '@type': 'Person', name: site.author },
     publisher: { '@type': 'Organization', name: site.title }
+  };
+  return `<script type="application/ld+json">${JSON.stringify(json)}</script>`;
+}
+
+function buildSiteJsonLd(canonical) {
+  const json = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': `${site.baseUrl}/#organization`,
+        name: site.title,
+        url: site.baseUrl
+      },
+      {
+        '@type': 'WebSite',
+        '@id': `${site.baseUrl}/#website`,
+        name: site.title,
+        url: site.baseUrl,
+        publisher: { '@id': `${site.baseUrl}/#organization` },
+        inLanguage: 'en',
+        mainEntityOfPage: canonical
+      }
+    ]
   };
   return `<script type="application/ld+json">${JSON.stringify(json)}</script>`;
 }
@@ -165,14 +212,9 @@ function renderGoogleTags() {
     tags.push(`<meta name="google-site-verification" content="${escapeHtml(site.googleSiteVerification)}">`);
   }
 
-  if (site.googleAdsenseId) {
-    tags.push(`<meta name="google-adsense-account" content="${escapeHtml(site.googleAdsenseId)}">`);
-    tags.push(`<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${escapeHtml(site.googleAdsenseId)}" crossorigin="anonymous"></script>`);
-  }
-
-  if (site.googleAnalyticsId) {
-    tags.push(`<script async src="https://www.googletagmanager.com/gtag/js?id=${escapeHtml(site.googleAnalyticsId)}"></script>`);
-    tags.push(`<script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', '${escapeHtml(site.googleAnalyticsId)}');</script>`);
+  if (site.googleTagId) {
+    tags.push(`<script async src="https://www.googletagmanager.com/gtag/js?id=${escapeHtml(site.googleTagId)}"></script>`);
+    tags.push(`<script>window.dataLayer = window.dataLayer || [];function gtag(){dataLayer.push(arguments);}gtag('js', new Date());gtag('config', '${escapeHtml(site.googleTagId)}');</script>`);
   }
 
   return tags.join('\n  ');
@@ -328,14 +370,12 @@ function renderInline(text) {
 
 function postCard(post) {
   return `<article class="card">
-    <span class="corner-cross tl">+</span><span class="corner-cross tr">+</span>
-    <span class="corner-cross bl">+</span><span class="corner-cross br">+</span>
-    <p class="meta"><time datetime="${escapeHtml(post.date)}">${escapeHtml(formatDate(post.date))}</time> · ${escapeHtml(post.searchIntent)}</p>
+    <p class="meta"><time datetime="${escapeHtml(post.date)}">${escapeHtml(formatDate(post.date))}</time> &middot; ${escapeHtml(post.searchIntent)}</p>
     <h2><a href="/posts/${escapeHtml(post.slug)}/">${escapeHtml(post.title)}</a></h2>
     <p>${escapeHtml(post.excerpt)}</p>
     <div class="card-footer">
       ${renderTags(post.tags)}
-      <a class="card-cta" href="/posts/${escapeHtml(post.slug)}/">READ GUIDE →</a>
+      <a class="card-cta" href="/posts/${escapeHtml(post.slug)}/">Read guide &rarr;</a>
     </div>
   </article>`;
 }
@@ -349,8 +389,6 @@ function relatedPosts(posts, currentSlug) {
   const related = posts.filter((post) => post.slug !== currentSlug).slice(0, 3);
   if (!related.length) return '';
   return `<aside class="related">
-    <span class="corner-cross tl">+</span><span class="corner-cross tr">+</span>
-    <span class="corner-cross bl">+</span><span class="corner-cross br">+</span>
     <h2>Related AI workflow guides</h2>
     <ul>${related.map((post) => `<li><a href="/posts/${escapeHtml(post.slug)}/">${escapeHtml(post.title)}</a></li>`).join('')}</ul>
   </aside>`;
@@ -368,6 +406,7 @@ async function build() {
   await ensureDir(path.join(PUBLIC_DIR, 'posts'));
   await ensureDir(path.join(PUBLIC_DIR, 'about'));
   await ensureDir(path.join(PUBLIC_DIR, 'contact'));
+  await copyStaticFiles();
 
   const postsIndexBody = `<section class="hero">
     <p class="eyebrow">All guides</p>
@@ -384,21 +423,28 @@ async function build() {
 
   const css = await fs.readFile(path.join(ROOT, 'src', 'styles.css'), 'utf8');
   await fs.writeFile(path.join(PUBLIC_DIR, 'styles.css'), css);
-  await writeAdsTxt();
 
   const indexBody = `<section class="hero">
-    <p class="eyebrow">AI tools and workflows</p>
-    <h1>Practical AI guides that help students, freelancers, and small businesses get real work done.</h1>
-    <p>${escapeHtml(site.description)} Each post is built for long-tail search intent, clear structure, and useful implementation steps.</p>
+    <p class="eyebrow">AI tools & workflows</p>
+    <h1>Practical guides that help you get real work done.</h1>
+    <p>Clear, actionable AI workflows for students, freelancers, and small businesses. Each guide walks through a tested process from start to finish.</p>
+    <div class="hero-promise" aria-label="What each guide includes">
+      <span>Prompt templates</span>
+      <span>Tool choices</span>
+      <span>Verification checklists</span>
+    </div>
+    <div class="hero-note">
+      <strong>Built for people who need a usable workflow, not another AI tools list.</strong>
+      <p>Every guide turns one real task into steps, prompts, review checks, and publish-ready next actions.</p>
+    </div>
   </section>
+  ${nodeDivider()}
   <section class="intro-grid">
     <article>
       <div class="intro-icon-wrapper">
-        <svg class="feature-icon" viewBox="0 0 24 24" width="32" height="32" stroke="var(--safety-accent)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="feature-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="20" height="20" stroke="var(--teal)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="11" cy="11" r="8"></circle>
           <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          <line x1="11" y1="8" x2="11" y2="14"></line>
-          <line x1="8" y1="11" x2="14" y2="11"></line>
         </svg>
       </div>
       <h2>SEO-first content</h2>
@@ -406,28 +452,32 @@ async function build() {
     </article>
     <article>
       <div class="intro-icon-wrapper">
-        <svg class="feature-icon" viewBox="0 0 24 24" width="32" height="32" stroke="var(--safety-accent)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="feature-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="20" height="20" stroke="var(--teal)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
           <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
           <line x1="8" y1="21" x2="16" y2="21"></line>
           <line x1="12" y1="17" x2="12" y2="21"></line>
-          <path d="M12 9v2M9 10h6"></path>
         </svg>
       </div>
       <h2>Autonomous publishing</h2>
-      <p>The system uses Hermes Agent for research and drafting, with deterministic fallback when needed.</p>
+      <p>Hermes Agent researches and drafts each guide, with deterministic fallback when needed.</p>
     </article>
     <article>
       <div class="intro-icon-wrapper">
-        <svg class="feature-icon" viewBox="0 0 24 24" width="32" height="32" stroke="var(--safety-accent)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <svg class="feature-icon" aria-hidden="true" focusable="false" viewBox="0 0 24 24" width="20" height="20" stroke="var(--teal)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
           <polyline points="9 11 11 13 15 9"></polyline>
         </svg>
       </div>
       <h2>Human-checked quality</h2>
-      <p>AI drafts include claim checks so facts can be verified before publishing.</p>
+      <p>Every AI draft includes claim checks so facts can be verified before publishing.</p>
     </article>
   </section>
-  <section class="grid">${posts.map(postCard).join('\n') || '<p>No posts yet. Run <code>npm run generate</code>.</p>'}</section>`;
+  ${nodeDivider()}
+  <section class="section-heading">
+    <p class="eyebrow">Latest guides</p>
+    <h2>Fresh workflows ready to use</h2>
+  </section>
+  <section class="grid" aria-label="Latest workflow guides">${posts.map(postCard).join('\n') || '<p>No posts yet. Run <code>npm run generate</code>.</p>'}</section>`;
 
   await fs.writeFile(path.join(PUBLIC_DIR, 'index.html'), layout({
     title: `${site.title} | AI workflow guides`,
@@ -447,10 +497,8 @@ async function build() {
     report.posts.push({ slug: post.slug, ...validation });
 
     const body = `<article class="post">
-      <span class="corner-cross tl">+</span><span class="corner-cross tr">+</span>
-      <span class="corner-cross bl">+</span><span class="corner-cross br">+</span>
       ${breadcrumbs(post.title)}
-      <p class="meta"><time datetime="${escapeHtml(post.date)}">${escapeHtml(formatDate(post.date))}</time> · By ${escapeHtml(site.author)} · ${escapeHtml(post.searchIntent)}</p>
+      <p class="meta"><time datetime="${escapeHtml(post.date)}">${escapeHtml(formatDate(post.date))}</time> &middot; By ${escapeHtml(site.author)} &middot; ${escapeHtml(post.searchIntent)}</p>
       <h1>${escapeHtml(post.title)}</h1>
       <p class="lede">${escapeHtml(post.excerpt)}</p>
       ${renderTags(post.tags)}
@@ -473,8 +521,6 @@ async function build() {
     description: `About ${site.title}, written by ${site.author}.`,
     canonical: `${site.baseUrl}/about/`,
     body: `<section class="page">
-      <span class="corner-cross tl">+</span><span class="corner-cross tr">+</span>
-      <span class="corner-cross bl">+</span><span class="corner-cross br">+</span>
       <h1>About mdevtech Blogs</h1>
       <p>mdevtech Blogs publishes practical AI workflow guides for students, freelancers, and small local businesses. The site focuses on long-tail SEO, useful examples, and human-checked content.</p>
     </section>`
@@ -485,8 +531,6 @@ async function build() {
     description: `Contact ${site.title}.`,
     canonical: `${site.baseUrl}/contact/`,
     body: `<section class="page">
-      <span class="corner-cross tl">+</span><span class="corner-cross tr">+</span>
-      <span class="corner-cross bl">+</span><span class="corner-cross br">+</span>
       <h1>Contact</h1>
       <p>For collaborations, corrections, or SEO feedback, contact <strong>muneeb1st</strong>.</p>
     </section>`
@@ -503,9 +547,19 @@ async function build() {
   console.log(`SEO report: ${report.summary.errors} errors, ${report.summary.warnings} warnings`);
 }
 
-async function writeAdsTxt() {
-  if (!site.googleAdsenseId) return;
-  await fs.writeFile(path.join(PUBLIC_DIR, 'ads.txt'), `google.com, pub-${site.googleAdsenseId.replace(/^pub-/, '')}, DIRECT, f08c47fec0942fa0\n`);
+async function copyStaticFiles() {
+  const staticDir = path.join(ROOT, 'static');
+  const entries = await fs.readdir(staticDir, { withFileTypes: true }).catch(() => []);
+
+  for (const entry of entries) {
+    const from = path.join(staticDir, entry.name);
+    const to = path.join(PUBLIC_DIR, entry.name);
+    if (entry.isDirectory()) {
+      await fs.cp(from, to, { recursive: true });
+    } else if (entry.isFile()) {
+      await fs.copyFile(from, to);
+    }
+  }
 }
 
 function renderFaq(faq = []) {

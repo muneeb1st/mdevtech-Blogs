@@ -7,6 +7,28 @@ import { PUBLIC_DIR } from '../src/lib.mjs';
 const args = new Set(process.argv.slice(2));
 const strict = args.has('--strict') || process.env.STRICT_SEO === '1';
 
+function usableEnvValue(value = '') {
+  const trimmed = String(value).trim();
+  if (!trimmed) return '';
+  if (/^(YOUR|REPLACE)_/i.test(trimmed)) return '';
+  if (/X{6,}/i.test(trimmed)) return '';
+  return trimmed;
+}
+
+function usableSiteUrl(value, fallback) {
+  const candidate = usableEnvValue(value);
+  if (!candidate) return fallback;
+  try {
+    const parsed = new URL(candidate);
+    const host = parsed.hostname.toLowerCase();
+    if (host === 'localhost' || host === '127.0.0.1' || host === '::1') return fallback;
+    if (!['http:', 'https:'].includes(parsed.protocol)) return fallback;
+    return parsed.origin.replace(/\/$/, '');
+  } catch {
+    return fallback;
+  }
+}
+
 async function main() {
   const reportPath = path.join(PUBLIC_DIR, 'seo-report.json');
   const sitemapPath = path.join(PUBLIC_DIR, 'sitemap.xml');
@@ -19,7 +41,7 @@ async function main() {
   const sitemap = await fs.readFile(sitemapPath, 'utf8');
   const robots = await fs.readFile(robotsPath, 'utf8');
 
-  const baseUrl = process.env.SITE_URL || 'https://mdevtech.vercel.app';
+  const baseUrl = usableSiteUrl(process.env.SITE_URL, 'https://mdevtech.vercel.app');
   add('seo-report.json exists', true);
   add('sitemap.xml exists', true);
   add('robots.txt exists', true);

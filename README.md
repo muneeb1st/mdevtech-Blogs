@@ -79,6 +79,10 @@ Optional:
 - `HERMES_PROVIDER`
 - `HERMES_SKILLS`
 - `HERMES_TOOLSETS`
+- `GOOGLE_TAG_ID` or `GOOGLE_ANALYTICS_ID`
+- `GOOGLE_SITE_VERIFICATION` or `GSC_VERIFICATION`
+
+Ads are intentionally not wired yet. Add ad scripts only after the site has meaningful search traffic and the layout can be checked again for Core Web Vitals impact.
 
 ## SEO System
 
@@ -88,6 +92,7 @@ The build generates:
 - meta titles/descriptions
 - Open Graph tags
 - Twitter card tags
+- Organization and WebSite JSON-LD
 - BlogPosting JSON-LD
 - FAQPage JSON-LD
 - `sitemap.xml`
@@ -106,10 +111,15 @@ npm run audit:seo
 ## Google Search Console
 
 After deploying to Vercel:
-1. Verify `mdevtech.vercel.app`.
-2. Submit `https://mdevtech.vercel.app/sitemap.xml`.
-3. Request indexing for the homepage and first posts.
-4. Monitor queries, coverage, and Core Web Vitals.
+1. Add the HTML tag token to `GOOGLE_SITE_VERIFICATION` or `GSC_VERIFICATION`.
+2. Verify `mdevtech.vercel.app`.
+3. Submit `https://mdevtech.vercel.app/sitemap.xml`.
+4. Request indexing for the homepage and first posts.
+5. Monitor queries, coverage, and Core Web Vitals.
+
+## Google Analytics
+
+Set `GOOGLE_TAG_ID` or `GOOGLE_ANALYTICS_ID` to the GA4 Measurement ID, then redeploy. The build only injects the Google tag when that value is present.
 
 ## DOX
 

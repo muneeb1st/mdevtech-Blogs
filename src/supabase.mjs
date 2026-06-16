@@ -1,7 +1,24 @@
 import { createClient } from '@supabase/supabase-js';
 
-const url = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '';
-const key = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
+function usableValue(value = '') {
+  const trimmed = value.trim();
+  if (!trimmed || /^YOUR_/i.test(trimmed) || /^REPLACE_/i.test(trimmed)) return '';
+  return trimmed;
+}
+
+function usableSupabaseUrl(value = '') {
+  const trimmed = usableValue(value);
+  if (!trimmed) return '';
+  try {
+    const parsed = new URL(trimmed);
+    return parsed.protocol === 'https:' && parsed.hostname.endsWith('.supabase.co') ? trimmed : '';
+  } catch {
+    return '';
+  }
+}
+
+const url = usableSupabaseUrl(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '');
+const key = usableValue(process.env.SUPABASE_SERVICE_ROLE_KEY || '');
 
 export const supabase = url && key ? createClient(url, key) : null;
 
@@ -11,7 +28,7 @@ export function hasSupabaseCredentials() {
 
 export async function upsertPost(post) {
   if (!supabase) {
-    console.warn('[Supabase] Missing SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY or NEXT_PUBLIC_SUPABASE_ANON_KEY. Skipping sync.');
+    console.warn('[Supabase] Missing SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY. Skipping sync.');
     return null;
   }
 

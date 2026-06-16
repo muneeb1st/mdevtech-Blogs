@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-16T00:31:18.638Z",
+  "generatedAt": "2026-06-16T02:10:25.796Z",
   "summary": {
     "posts": 2,
     "errors": 0,
@@ -15,7 +15,7 @@
         "titleLength": 52,
         "metaTitleLength": 49,
         "metaDescriptionLength": 145,
-        "bodyWordCount": 1259
+        "bodyWordCount": 1765
       }
     },
     {
@@ -27,7 +27,7 @@
         "titleLength": 67,
         "metaTitleLength": 64,
         "metaDescriptionLength": 160,
-        "bodyWordCount": 1280
+        "bodyWordCount": 1697
       }
     }
   ]

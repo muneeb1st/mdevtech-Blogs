@@ -32,8 +32,9 @@ jobs:
       SITE_URL: https://mdevtech.vercel.app
       SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
       SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
+      GOOGLE_TAG_ID: ${{ secrets.GOOGLE_TAG_ID }}
       GOOGLE_ANALYTICS_ID: ${{ secrets.GOOGLE_ANALYTICS_ID }}
+      GSC_VERIFICATION: ${{ secrets.GSC_VERIFICATION }}
       GOOGLE_SITE_VERIFICATION: ${{ secrets.GOOGLE_SITE_VERIFICATION }}
-      GOOGLE_ADSENSE_ID: ${{ secrets.GOOGLE_ADSENSE_ID }}
       HERMES_TIMEOUT_MS: 600000
       STRICT_SEO: "1"

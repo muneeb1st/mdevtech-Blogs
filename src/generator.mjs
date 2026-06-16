@@ -6,9 +6,10 @@ import { generateWithHermes } from './agents/hermes-runner.mjs';
 import { currentSlot, fileExists, POSTS_DIR, readPosts, slugify, writePost } from './lib.mjs';
 import { loadKeywordClusters, selectKeywordCluster } from './seo/keywords.mjs';
 import { validatePostSeo } from './seo/validator.mjs';
-import { upsertPost } from './supabase.mjs';
+import { recordPublishEvent, upsertPost } from './supabase.mjs';
 
-const args = new Set(process.argv.slice(2));
+const rawArgs = process.argv.slice(2);
+const args = new Set(rawArgs);
 const dryRun = args.has('--dry-run');
 const force = args.has('--force');
 const offline = args.has('--offline');
@@ -17,6 +18,48 @@ const strict = args.has('--strict') || process.env.STRICT_SEO === '1';
 const niche = 'AI tools and workflows for students, freelancers, and small local businesses';
 const author = 'muneeb1st';
 const siteUrl = process.env.SITE_URL || 'https://mdevtech.vercel.app';
+
+function readArgValue(name) {
+  const equalsValue = rawArgs.find((arg) => arg.startsWith(`${name}=`));
+  if (equalsValue) return equalsValue.slice(name.length + 1);
+  const index = rawArgs.indexOf(name);
+  if (index !== -1) return rawArgs[index + 1];
+  return '';
+}
+
+function resolveNow() {
+  const override = readArgValue('--now') || readArgValue('--date');
+  if (!override) return new Date();
+  const parsed = new Date(override);
+  if (Number.isNaN(parsed.getTime())) {
+    throw new Error(`Invalid --date/--now value: ${override}`);
+  }
+  return parsed;
+}
+
+function ensureInternalLinks(post, existingPosts) {
+  const defaults = [
+    { slug: 'ai-tools-students-note-taking-research', anchor: 'AI tools for students: note-taking and research workflow' },
+    { slug: 'ai-proposal-writing-freelancers', anchor: 'AI proposal writing workflow for freelancers' },
+    { slug: 'ai-content-calendar-local-business', anchor: 'Local business AI content calendar' }
+  ];
+
+  const candidates = [
+    ...(post.internalLinks || []),
+    ...existingPosts.map((existingPost) => ({ slug: existingPost.slug, anchor: existingPost.title })),
+    ...defaults
+  ];
+
+  const seen = new Set();
+  return candidates
+    .filter((link) => link?.slug && link?.anchor && link.slug !== post.slug)
+    .filter((link) => {
+      if (seen.has(link.slug)) return false;
+      seen.add(link.slug);
+      return true;
+    })
+    .slice(0, 3);
+}
 
 function normalizePost(raw, cluster, now) {
   const slot = currentSlot(now);
@@ -86,13 +129,20 @@ async function makePost({ cluster, existingPosts, now = new Date() }) {
   }
 
   const post = normalizePost(raw, cluster, now);
-  post.internalLinks = (post.internalLinks || []).filter((link) => link.slug !== post.slug);
+  post.internalLinks = ensureInternalLinks(post, existingPosts);
+  const finalValidation = validatePostSeo(post, { strict });
+  if (!finalValidation.passed) {
+    if (strict) {
+      throw new Error(`SEO validation failed after internal link cleanup: ${finalValidation.errors.join('; ')}`);
+    }
+    console.warn('[SEO] Post warnings after internal link cleanup:', finalValidation.warnings.join(' | '));
+  }
   post.generationMode = generationMode;
   return post;
 }
 
 async function main() {
-  const now = new Date();
+  const now = resolveNow();
   const slot = currentSlot(now);
   const clusters = await loadKeywordClusters();
   const cluster = selectKeywordCluster(slot, clusters);
@@ -116,7 +166,13 @@ async function main() {
   console.log(`Generated post: ${written}`);
 
   try {
-    await upsertPost(post);
+    const syncedPost = await upsertPost(post);
+    if (syncedPost) {
+      await recordPublishEvent(syncedPost, {
+        slug: post.slug,
+        generationMode: post.generationMode
+      });
+    }
   } catch (error) {
     console.warn('[Supabase] Failed to sync post.');
     console.warn(error.message);
