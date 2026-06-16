@@ -40,6 +40,8 @@ The goal is to maximize Google ranking potential through keyword targeting, Herm
 - Use `automation/cron.example` for a local 12-hour cron schedule.
 - Use `.github/workflows/auto-blog.yml` for GitHub-hosted scheduled publishing.
 - Use `automation/supabase_schema.sql` to initialize Supabase tables.
+- Use `npm run supabase:backup` after strict SEO passes to back up all post JSON into Supabase.
+- Use `npm run supabase:restore` on a new server to restore `content/posts/` from Supabase if AWS local disk is lost.
 
 ## Verification
 

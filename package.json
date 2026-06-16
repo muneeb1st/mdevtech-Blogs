@@ -12,6 +12,9 @@
     "dev": "node src/server.mjs",
     "audit:seo": "node scripts/audit-seo.mjs",
     "audit:seo:strict": "node scripts/audit-seo.mjs --strict",
+    "supabase:backup": "node scripts/supabase-backup.mjs backup",
+    "supabase:verify": "node scripts/supabase-backup.mjs verify",
+    "supabase:restore": "node scripts/supabase-backup.mjs restore",
     "preview:seo": "npm run build && npm run audit:seo"
   },
   "engines": {

@@ -42,11 +42,13 @@ create table if not exists content_versions (
   id uuid primary key default gen_random_uuid(),
   post_id uuid references posts(id) on delete cascade,
   version int not null,
+  -- Full original post JSON. This is the durable restore source if GitHub/AWS is unavailable.
   payload jsonb not null,
   created_at timestamptz default now()
 );
 
 create index if not exists content_versions_post_id_idx on content_versions(post_id);
+create index if not exists content_versions_post_version_idx on content_versions(post_id, version desc);
 
 create table if not exists publish_events (
   id uuid primary key default gen_random_uuid(),

@@ -26,6 +26,8 @@ Contains scheduler examples, Supabase schema, and deployment configuration for a
 - Use `npm run audit:seo` before enabling live scheduled publishing.
 - Scheduled publishing must keep `STRICT_SEO=1` and `PREFER_LOW_DIFFICULTY_KEYWORDS=1` unless a human intentionally overrides them.
 - Scheduled publishing must run `npm run audit:seo:strict` before committing generated posts or public output.
+- After strict SEO passes, scheduled publishing should run `npm run supabase:backup`; it skips safely when credentials are missing and fails loudly when configured credentials cannot sync.
+- Use `npm run supabase:restore` on a new server to rebuild `content/posts/` from Supabase `content_versions.payload`.
 
 ## Verification
 

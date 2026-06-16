@@ -14,7 +14,7 @@ Source modules generate SEO-optimized blog content with Hermes Agent, compile st
 - `build.mjs` owns static HTML, JSON-LD, RSS, sitemap, robots, and SEO report output.
 - `server.mjs` owns local preview.
 - `lib.mjs` owns shared helpers.
-- `supabase.mjs` owns Supabase client and sync helpers.
+- `supabase.mjs` owns Supabase client, post backup, content versioning, restore helpers, and sync helpers.
 
 ## Local Contracts
 
@@ -25,6 +25,7 @@ Source modules generate SEO-optimized blog content with Hermes Agent, compile st
 - Generated slugs must be deterministic and filesystem-safe.
 - Build output must be static-host compatible.
 - Supabase sync must warn and continue if credentials are missing.
+- Supabase backups must preserve the full post JSON in `content_versions.payload` so a new server can restore `content/posts/` without relying on AWS local disk.
 
 ## Work Guidance
 
