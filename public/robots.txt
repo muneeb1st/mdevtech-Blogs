@@ -1,3 +1,4 @@
 User-agent: *
 Allow: /
+Sitemap: https://mdevtech.vercel.app/sitemap-index.xml
 Sitemap: https://mdevtech.vercel.app/sitemap.xml

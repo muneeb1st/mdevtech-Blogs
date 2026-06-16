@@ -590,13 +590,45 @@ async function writeRss(posts) {
 }
 
 async function writeSitemap(posts) {
-  const urls = ['/', '/posts/', '/about/', '/contact/', ...posts.map((post) => `/posts/${post.slug}/`)];
-  await fs.writeFile(path.join(PUBLIC_DIR, 'sitemap.xml'), `<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((url) => `<url><loc>${site.baseUrl}${url}</loc><lastmod>${new Date().toISOString()}</lastmod><changefreq>weekly</changefreq><priority>${url === '/' ? '1.0' : '0.8'}</priority></url>`).join('')}</urlset>`);
+  const today = new Date().toISOString().slice(0, 10);
+  const urls = [
+    { path: '/', lastmod: today, priority: '1.0' },
+    { path: '/posts/', lastmod: today, priority: '0.8' },
+    { path: '/about/', lastmod: today, priority: '0.6' },
+    { path: '/contact/', lastmod: today, priority: '0.5' },
+    ...posts.map((post) => ({
+      path: `/posts/${post.slug}/`,
+      lastmod: new Date(post.date).toISOString().slice(0, 10),
+      priority: '0.8'
+    }))
+  ];
+
+  const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+${urls.map((url) => `  <url>
+    <loc>${site.baseUrl}${url.path}</loc>
+    <lastmod>${url.lastmod}</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>${url.priority}</priority>
+  </url>`).join('\n')}
+</urlset>
+`;
+
+  const sitemapIndex = `<?xml version="1.0" encoding="UTF-8"?>
+<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <sitemap>
+    <loc>${site.baseUrl}/sitemap.xml</loc>
+    <lastmod>${today}</lastmod>
+  </sitemap>
+</sitemapindex>
+`;
+
+  await fs.writeFile(path.join(PUBLIC_DIR, 'sitemap.xml'), sitemap);
+  await fs.writeFile(path.join(PUBLIC_DIR, 'sitemap-index.xml'), sitemapIndex);
 }
 
 async function writeRobots(posts) {
-  const sitemap = `${site.baseUrl}/sitemap.xml`;
-  await fs.writeFile(path.join(PUBLIC_DIR, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${sitemap}\n`);
+  await fs.writeFile(path.join(PUBLIC_DIR, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${site.baseUrl}/sitemap-index.xml\nSitemap: ${site.baseUrl}/sitemap.xml\n`);
 }
 
 async function writeFeedJson(posts) {
