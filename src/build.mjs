@@ -545,6 +545,7 @@ async function build() {
   }));
 
   await writeRss(posts);
+  await writeAtom(posts);
   await writeSitemap(posts);
   await writeRobots(posts);
   await writeFeedJson(posts);
@@ -589,6 +590,34 @@ async function writeRss(posts) {
   await fs.writeFile(path.join(PUBLIC_DIR, 'rss.xml'), `<?xml version="1.0" encoding="UTF-8" ?><rss version="2.0"><channel><title>${escapeHtml(site.title)}</title><link>${site.baseUrl}</link><description>${escapeHtml(site.description)}</description>${rssItems}</channel></rss>`);
 }
 
+async function writeAtom(posts) {
+  const updated = posts[0]?.date || new Date().toISOString();
+  const entries = posts.map((post) => `  <entry>
+    <title>${escapeHtml(post.title)}</title>
+    <link rel="alternate" type="text/html" href="${site.baseUrl}/posts/${post.slug}/"/>
+    <id>${site.baseUrl}/posts/${post.slug}/</id>
+    <published>${new Date(post.date).toISOString()}</published>
+    <updated>${new Date(post.date).toISOString()}</updated>
+    <summary>${escapeHtml(post.metaDescription || post.excerpt)}</summary>
+    <author><name>${escapeHtml(site.author)}</name></author>
+  </entry>`).join('\n');
+
+  const atom = `<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>${escapeHtml(site.title)}</title>
+  <subtitle>${escapeHtml(site.description)}</subtitle>
+  <link rel="self" type="application/atom+xml" href="${site.baseUrl}/atom.xml"/>
+  <link rel="alternate" type="text/html" href="${site.baseUrl}/"/>
+  <id>${site.baseUrl}/</id>
+  <updated>${new Date(updated).toISOString()}</updated>
+  <author><name>${escapeHtml(site.author)}</name></author>
+${entries}
+</feed>
+`;
+
+  await fs.writeFile(path.join(PUBLIC_DIR, 'atom.xml'), atom);
+}
+
 async function writeSitemap(posts) {
   const today = new Date().toISOString().slice(0, 10);
   const urls = [
@@ -628,7 +657,7 @@ ${urls.map((url) => `  <url>
 }
 
 async function writeRobots(posts) {
-  await fs.writeFile(path.join(PUBLIC_DIR, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${site.baseUrl}/sitemap-index.xml\nSitemap: ${site.baseUrl}/sitemap.xml\n`);
+  await fs.writeFile(path.join(PUBLIC_DIR, 'robots.txt'), `User-agent: *\nAllow: /\nSitemap: ${site.baseUrl}/sitemap-index.xml\nSitemap: ${site.baseUrl}/sitemap.xml\nSitemap: ${site.baseUrl}/atom.xml\n`);
 }
 
 async function writeFeedJson(posts) {
