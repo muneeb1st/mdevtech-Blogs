@@ -1,11 +1,23 @@
 {
-  "generatedAt": "2026-06-15T22:56:06.370Z",
+  "generatedAt": "2026-06-16T00:31:18.638Z",
   "summary": {
-    "posts": 1,
+    "posts": 2,
     "errors": 0,
     "warnings": 0
   },
   "posts": [
+    {
+      "slug": "2026-06-16-00-ai-client-proposal-template-workflow",
+      "passed": true,
+      "errors": [],
+      "warnings": [],
+      "metrics": {
+        "titleLength": 52,
+        "metaTitleLength": 49,
+        "metaDescriptionLength": 145,
+        "bodyWordCount": 1259
+      }
+    },
     {
       "slug": "2026-06-15-12-ai-social-media-content-calendar-workflow",
       "passed": true,

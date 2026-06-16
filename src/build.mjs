@@ -39,6 +39,18 @@ function layout({ title, description, canonical, body, post }) {
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
   <meta name="author" content="${escapeHtml(site.author)}">
+  
+  <script>
+    if (localStorage.getItem('theme') === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Space+Grotesk:wght@300;400;500;600;700;800;900&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/styles.css">
   <link rel="alternate" type="application/rss+xml" title="${escapeHtml(site.title)}" href="/rss.xml">
   ${renderGoogleTags()}
@@ -47,17 +59,70 @@ function layout({ title, description, canonical, body, post }) {
 </head>
 <body>
   <header class="site-header">
-    <a class="brand" href="/">${escapeHtml(site.title)}</a>
-    <nav class="top-nav">
-      <a href="/posts/">Posts</a>
-      <a href="/about/">About</a>
-      <a href="/contact/">Contact</a>
-    </nav>
+    <span class="corner-cross tl">+</span><span class="corner-cross tr">+</span>
+    <span class="corner-cross bl">+</span><span class="corner-cross br">+</span>
+    <div class="header-container">
+      <a class="brand" href="/">${escapeHtml(site.title)}</a>
+      <div class="nav-wrapper">
+        <nav class="top-nav">
+          <a href="/posts/">Posts</a>
+          <a href="/about/">About</a>
+          <a href="/contact/">Contact</a>
+        </nav>
+        <button id="theme-toggle" class="theme-toggle" aria-label="Toggle theme">
+          <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="4"></circle>
+            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path>
+          </svg>
+          <svg class="moon-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
   </header>
   <main>${body}</main>
   <footer class="site-footer">
-    <p>Built by ${escapeHtml(site.author)}. Practical AI workflows, SEO-first publishing, and human-checked quality.</p>
+    <span class="corner-cross tl">+</span><span class="corner-cross tr">+</span>
+    <span class="corner-cross bl">+</span><span class="corner-cross br">+</span>
+    <div class="footer-container">
+      <div class="footer-brand-section">
+        <span class="footer-brand">${escapeHtml(site.title)}</span>
+        <p class="footer-tagline">Evergreen AI tools & workflows for students, freelancers, and small businesses.</p>
+      </div>
+      <div class="footer-links-section">
+        <div class="footer-column">
+          <h4>Navigation</h4>
+          <a href="/">Home</a>
+          <a href="/posts/">All Posts</a>
+          <a href="/about/">About Us</a>
+          <a href="/contact/">Contact</a>
+        </div>
+        <div class="footer-column">
+          <h4>Feeds</h4>
+          <a href="/rss.xml">RSS Feed</a>
+          <a href="/feed.json">JSON Feed</a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; ${new Date().getFullYear()} ${escapeHtml(site.title)}. Built by ${escapeHtml(site.author)}. Autonomous publication with human-checked quality.</p>
+    </div>
   </footer>
+  <script>
+    const toggle = document.getElementById('theme-toggle');
+    if (toggle) {
+      toggle.addEventListener('click', () => {
+        if (document.documentElement.classList.contains('dark')) {
+          document.documentElement.classList.remove('dark');
+          localStorage.setItem('theme', 'light');
+        } else {
+          document.documentElement.classList.add('dark');
+          localStorage.setItem('theme', 'dark');
+        }
+      });
+    }
+  </script>
 </body>
 </html>`;
 }
@@ -114,18 +179,143 @@ function renderGoogleTags() {
 }
 
 function renderMarkdownish(text) {
-  return String(text || '').split(/\n\n+/).map((block) => {
-    const lines = block.split('\n');
-    if (block.startsWith('## ')) return `<h2>${renderInline(block.slice(3))}</h2>`;
-    if (block.startsWith('### ')) return `<h3>${renderInline(block.slice(4))}</h3>`;
-    if (lines.every((line) => line.startsWith('- '))) {
-      return `<ul>${lines.map((line) => `<li>${renderInline(line.slice(2))}</li>`).join('')}</ul>`;
+  const lines = String(text || '').split('\n');
+  const result = [];
+  let mode = null; // 'code', 'table', 'ul', 'ol', 'p'
+  let accum = [];
+
+  const closeCurrentMode = () => {
+    if (!mode) return;
+    if (mode === 'code') {
+      const codeText = escapeHtml(accum.join('\n'));
+      result.push(`<pre><code>${codeText}</code></pre>`);
+    } else if (mode === 'table') {
+      result.push(renderTableHtml(accum));
+    } else if (mode === 'ul') {
+      result.push(`<ul>${accum.map(li => `<li>${renderInline(li)}</li>`).join('')}</ul>`);
+    } else if (mode === 'ol') {
+      result.push(`<ol>${accum.map(li => `<li>${renderInline(li)}</li>`).join('')}</ol>`);
+    } else if (mode === 'p') {
+      const pText = accum.join('\n');
+      if (pText.trim()) {
+        result.push(`<p>${renderInline(pText)}</p>`);
+      }
     }
-    if (lines.every((line) => /^\d+\.\s/.test(line))) {
-      return `<ol>${lines.map((line) => `<li>${renderInline(line.replace(/^\d+\.\s/, ''))}</li>`).join('')}</ol>`;
+    accum = [];
+    mode = null;
+  };
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const trimmed = line.trim();
+
+    // Code block toggle
+    if (trimmed.startsWith('```')) {
+      if (mode === 'code') {
+        closeCurrentMode();
+      } else {
+        closeCurrentMode();
+        mode = 'code';
+      }
+      continue;
     }
-    return `<p>${renderInline(block)}</p>`;
-  }).join('\n');
+
+    if (mode === 'code') {
+      accum.push(line);
+      continue;
+    }
+
+    // Headings (should be standalone, not grouped into paragraphs)
+    if (trimmed.startsWith('## ')) {
+      closeCurrentMode();
+      result.push(`<h2>${renderInline(trimmed.slice(3))}</h2>`);
+      continue;
+    }
+    if (trimmed.startsWith('### ')) {
+      closeCurrentMode();
+      result.push(`<h3>${renderInline(trimmed.slice(4))}</h3>`);
+      continue;
+    }
+
+    // Table row
+    if (trimmed.startsWith('|')) {
+      if (mode !== 'table') {
+        closeCurrentMode();
+        mode = 'table';
+      }
+      accum.push(line);
+      continue;
+    }
+
+    // Unordered list item
+    if (trimmed.startsWith('- ')) {
+      if (mode !== 'ul') {
+        closeCurrentMode();
+        mode = 'ul';
+      }
+      accum.push(trimmed.slice(2));
+      continue;
+    }
+
+    // Ordered list item
+    if (/^\d+\.\s/.test(trimmed)) {
+      if (mode !== 'ol') {
+        closeCurrentMode();
+        mode = 'ol';
+      }
+      accum.push(trimmed.replace(/^\d+\.\s/, ''));
+      continue;
+    }
+
+    // Empty line
+    if (trimmed === '') {
+      closeCurrentMode();
+      continue;
+    }
+
+    // Normal paragraph text
+    if (mode !== 'p') {
+      closeCurrentMode();
+      mode = 'p';
+    }
+    accum.push(line);
+  }
+  closeCurrentMode();
+
+  return result.join('\n');
+}
+
+function renderTableHtml(rows) {
+  const parsedRows = rows
+    .map(row => {
+      const cells = row.split('|').map(c => c.trim());
+      if (row.startsWith('|')) cells.shift();
+      if (row.endsWith('|')) cells.pop();
+      return cells;
+    })
+    .filter(cells => {
+      return !cells.every(cell => /^[-:]+$/.test(cell) || cell === '');
+    });
+
+  if (parsedRows.length === 0) return '';
+
+  const headerCells = parsedRows[0];
+  const bodyRows = parsedRows.slice(1);
+
+  const ths = headerCells.map(cell => `<th>${renderInline(cell)}</th>`).join('');
+  const trs = bodyRows
+    .map(row => {
+      const tds = row.map(cell => `<td>${renderInline(cell)}</td>`).join('');
+      return `<tr>${tds}</tr>`;
+    })
+    .join('\n');
+
+  return `<div class="table-container">
+    <table>
+      <thead><tr>${ths}</tr></thead>
+      <tbody>${trs}</tbody>
+    </table>
+  </div>`;
 }
 
 function renderInline(text) {
@@ -138,10 +328,15 @@ function renderInline(text) {
 
 function postCard(post) {
   return `<article class="card">
+    <span class="corner-cross tl">+</span><span class="corner-cross tr">+</span>
+    <span class="corner-cross bl">+</span><span class="corner-cross br">+</span>
     <p class="meta"><time datetime="${escapeHtml(post.date)}">${escapeHtml(formatDate(post.date))}</time> · ${escapeHtml(post.searchIntent)}</p>
     <h2><a href="/posts/${escapeHtml(post.slug)}/">${escapeHtml(post.title)}</a></h2>
     <p>${escapeHtml(post.excerpt)}</p>
-    ${renderTags(post.tags)}
+    <div class="card-footer">
+      ${renderTags(post.tags)}
+      <a class="card-cta" href="/posts/${escapeHtml(post.slug)}/">READ GUIDE →</a>
+    </div>
   </article>`;
 }
 
@@ -154,6 +349,8 @@ function relatedPosts(posts, currentSlug) {
   const related = posts.filter((post) => post.slug !== currentSlug).slice(0, 3);
   if (!related.length) return '';
   return `<aside class="related">
+    <span class="corner-cross tl">+</span><span class="corner-cross tr">+</span>
+    <span class="corner-cross bl">+</span><span class="corner-cross br">+</span>
     <h2>Related AI workflow guides</h2>
     <ul>${related.map((post) => `<li><a href="/posts/${escapeHtml(post.slug)}/">${escapeHtml(post.title)}</a></li>`).join('')}</ul>
   </aside>`;
@@ -195,9 +392,40 @@ async function build() {
     <p>${escapeHtml(site.description)} Each post is built for long-tail search intent, clear structure, and useful implementation steps.</p>
   </section>
   <section class="intro-grid">
-    <article><h2>SEO-first content</h2><p>Every article targets a specific long-tail keyword with meta tags, FAQ schema, internal links, and structured data.</p></article>
-    <article><h2>Autonomous publishing</h2><p>The system uses Hermes Agent for research and drafting, with deterministic fallback when needed.</p></article>
-    <article><h2>Human-checked quality</h2><p>AI drafts include claim checks so important facts can be verified before publishing.</p></article>
+    <article>
+      <div class="intro-icon-wrapper">
+        <svg class="feature-icon" viewBox="0 0 24 24" width="32" height="32" stroke="var(--safety-accent)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          <line x1="11" y1="8" x2="11" y2="14"></line>
+          <line x1="8" y1="11" x2="14" y2="11"></line>
+        </svg>
+      </div>
+      <h2>SEO-first content</h2>
+      <p>Every article targets a specific long-tail keyword with meta tags, FAQ schema, internal links, and structured data.</p>
+    </article>
+    <article>
+      <div class="intro-icon-wrapper">
+        <svg class="feature-icon" viewBox="0 0 24 24" width="32" height="32" stroke="var(--safety-accent)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+          <line x1="8" y1="21" x2="16" y2="21"></line>
+          <line x1="12" y1="17" x2="12" y2="21"></line>
+          <path d="M12 9v2M9 10h6"></path>
+        </svg>
+      </div>
+      <h2>Autonomous publishing</h2>
+      <p>The system uses Hermes Agent for research and drafting, with deterministic fallback when needed.</p>
+    </article>
+    <article>
+      <div class="intro-icon-wrapper">
+        <svg class="feature-icon" viewBox="0 0 24 24" width="32" height="32" stroke="var(--safety-accent)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+          <polyline points="9 11 11 13 15 9"></polyline>
+        </svg>
+      </div>
+      <h2>Human-checked quality</h2>
+      <p>AI drafts include claim checks so facts can be verified before publishing.</p>
+    </article>
   </section>
   <section class="grid">${posts.map(postCard).join('\n') || '<p>No posts yet. Run <code>npm run generate</code>.</p>'}</section>`;
 
@@ -219,6 +447,8 @@ async function build() {
     report.posts.push({ slug: post.slug, ...validation });
 
     const body = `<article class="post">
+      <span class="corner-cross tl">+</span><span class="corner-cross tr">+</span>
+      <span class="corner-cross bl">+</span><span class="corner-cross br">+</span>
       ${breadcrumbs(post.title)}
       <p class="meta"><time datetime="${escapeHtml(post.date)}">${escapeHtml(formatDate(post.date))}</time> · By ${escapeHtml(site.author)} · ${escapeHtml(post.searchIntent)}</p>
       <h1>${escapeHtml(post.title)}</h1>
@@ -242,14 +472,24 @@ async function build() {
     title: `About ${site.title}`,
     description: `About ${site.title}, written by ${site.author}.`,
     canonical: `${site.baseUrl}/about/`,
-    body: `<section class="page"><h1>About mdevtech Blogs</h1><p>mdevtech Blogs publishes practical AI workflow guides for students, freelancers, and small local businesses. The site focuses on long-tail SEO, useful examples, and human-checked content.</p></section>`
+    body: `<section class="page">
+      <span class="corner-cross tl">+</span><span class="corner-cross tr">+</span>
+      <span class="corner-cross bl">+</span><span class="corner-cross br">+</span>
+      <h1>About mdevtech Blogs</h1>
+      <p>mdevtech Blogs publishes practical AI workflow guides for students, freelancers, and small local businesses. The site focuses on long-tail SEO, useful examples, and human-checked content.</p>
+    </section>`
   }));
 
   await fs.writeFile(path.join(PUBLIC_DIR, 'contact', 'index.html'), layout({
     title: `Contact ${site.title}`,
     description: `Contact ${site.title}.`,
     canonical: `${site.baseUrl}/contact/`,
-    body: `<section class="page"><h1>Contact</h1><p>For collaborations, corrections, or SEO feedback, contact <strong>muneeb1st</strong>.</p></section>`
+    body: `<section class="page">
+      <span class="corner-cross tl">+</span><span class="corner-cross tr">+</span>
+      <span class="corner-cross bl">+</span><span class="corner-cross br">+</span>
+      <h1>Contact</h1>
+      <p>For collaborations, corrections, or SEO feedback, contact <strong>muneeb1st</strong>.</p>
+    </section>`
   }));
 
   await writeRss(posts);

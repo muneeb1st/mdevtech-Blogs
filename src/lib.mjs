@@ -1,8 +1,9 @@
 import 'dotenv/config';
 import fs from 'node:fs/promises';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-export const ROOT = path.resolve(new URL('..', import.meta.url).pathname);
+export const ROOT = path.resolve(fileURLToPath(new URL('..', import.meta.url)));
 export const POSTS_DIR = path.join(ROOT, 'content', 'posts');
 export const PUBLIC_DIR = path.join(ROOT, 'public');
 
