@@ -7,6 +7,7 @@ Contains scheduler examples, Supabase schema, and deployment configuration for a
 ## Ownership
 
 - `cron.example` documents local 12-hour cron execution.
+- `new-server-hermes-cron-runbook.md` documents recovery and recreating Hermes cron publishing on a new server.
 - `supabase_schema.sql` owns Supabase database schema.
 - `.github/workflows/auto-blog.yml` owns GitHub scheduled publishing.
 - `vercel.json` owns Vercel deployment settings.
@@ -28,6 +29,7 @@ Contains scheduler examples, Supabase schema, and deployment configuration for a
 - Scheduled publishing must run `npm run audit:seo:strict` before committing generated posts or public output.
 - After strict SEO passes, scheduled publishing should run `npm run supabase:backup`; it skips safely when credentials are missing and fails loudly when configured credentials cannot sync.
 - Use `npm run supabase:restore` on a new server to rebuild `content/posts/` from Supabase `content_versions.payload`.
+- Use `automation/new-server-hermes-cron-runbook.md` when moving the publishing system to another server or recreating the Hermes cron job after server loss.
 
 ## Verification
 

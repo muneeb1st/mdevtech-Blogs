@@ -43,6 +43,12 @@ If Hermes is unavailable or fails, the generator falls back to deterministic off
 
 Run `automation/supabase_schema.sql` in your Supabase SQL editor.
 
+For disaster recovery or moving publishing to a new server, use:
+
+```txt
+automation/new-server-hermes-cron-runbook.md
+```
+
 Required local env vars:
 
 ```bash

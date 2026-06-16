@@ -42,6 +42,7 @@ The goal is to maximize Google ranking potential through keyword targeting, Herm
 - Use `automation/supabase_schema.sql` to initialize Supabase tables.
 - Use `npm run supabase:backup` after strict SEO passes to back up all post JSON into Supabase.
 - Use `npm run supabase:restore` on a new server to restore `content/posts/` from Supabase if AWS local disk is lost.
+- Use `automation/new-server-hermes-cron-runbook.md` to rebuild the full Hermes publishing cron on another server.
 
 ## Verification
 
