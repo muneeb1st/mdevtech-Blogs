@@ -13,7 +13,7 @@ export async function loadKeywordClusters() {
   }));
 }
 
-export function selectKeywordCluster(slot, clusters) {
+export function selectKeywordCluster(slot, clusters, options = {}) {
   if (!clusters.length) throw new Error('No keyword clusters found.');
   const preferred = process.env.PREFER_LOW_DIFFICULTY_KEYWORDS === '0'
     ? clusters
@@ -21,7 +21,19 @@ export function selectKeywordCluster(slot, clusters) {
   const pool = preferred.length ? preferred : clusters;
   let hash = 0;
   for (const char of slot) hash = (hash * 31 + char.charCodeAt(0)) >>> 0;
+
+  const existingBaseSlugs = new Set((options.existingPosts || []).map((post) => baseSlugFromPostSlug(post.slug)));
+  for (let offset = 0; offset < pool.length; offset++) {
+    const candidate = pool[(hash + offset) % pool.length];
+    const candidateBaseSlug = candidate.slug || slugify(candidate.primaryKeyword);
+    if (!existingBaseSlugs.has(candidateBaseSlug)) return candidate;
+  }
+
   return pool[hash % pool.length];
+}
+
+export function baseSlugFromPostSlug(slug = '') {
+  return String(slug).replace(/^\d{4}-\d{2}-\d{2}-(00|12)-/, '');
 }
 
 export function buildTopicFromCluster(cluster) {

@@ -166,7 +166,8 @@ async function main() {
   const now = resolveNow();
   const slot = currentSlot(now);
   const clusters = await loadKeywordClusters();
-  const cluster = selectKeywordCluster(slot, clusters);
+  const existingPosts = await readPosts();
+  const cluster = selectKeywordCluster(slot, clusters, { existingPosts });
   const target = path.join(POSTS_DIR, `${slot}-${slugify(cluster.slug || cluster.primaryKeyword)}.json`);
 
   if (!force && await fileExists(target)) {
@@ -174,7 +175,6 @@ async function main() {
     process.exit(0);
   }
 
-  const existingPosts = await readPosts();
   const post = await makePost({ cluster, existingPosts, now });
   const written = path.join(POSTS_DIR, `${post.slug}.json`);
 

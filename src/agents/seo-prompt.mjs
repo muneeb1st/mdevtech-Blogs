@@ -327,6 +327,10 @@ export function buildFallbackPost({ cluster, now = new Date(), existingPosts = [
   const intent = cluster.searchIntent || 'informational';
   const secondary = (cluster.secondaryKeywords || []).slice(0, 3);
   const angle = cluster.articleAngle || 'practical implementation guide';
+  const workflow = Array.isArray(cluster.workflow) && cluster.workflow.length
+    ? cluster.workflow
+    : ['Define the task', 'Draft with AI', 'Review the output', 'Save the template'];
+  const tools = Array.isArray(cluster.tools) && cluster.tools.length ? cluster.tools : ['LLM', 'Google Docs', 'Notion'];
   const plan = buildFallbackPlan({ cluster, primary, audience, angle });
   const workflowSteps = plan.steps.map((step, index) => `## Step ${index + 1}: ${step.title}
 
@@ -349,23 +353,23 @@ Verification check: ${step.check}`).join('\n\n');
   const metaDescription = `Step-by-step ${primary} workflow for ${audience}. Tools, prompt templates, verification checklist, and common mistakes to avoid.`;
   const excerpt = `A practical ${primary} workflow for ${audience}. Tools, prompt templates, and verification checklist included.`;
 
-  const body = `## ${primary}: the practical answer
+  const body = `## ${primary}: a field-ready workflow
 
-People searching for "${primary}" need a usable workflow, not another list of AI tools. The best starting point is simple: collect the real inputs, use AI to shape a draft, verify every changing detail, then save the final version as a reusable template. For ${audience}, this guide focuses on ${angle}.
+${sentenceCase(primary)} should produce a concrete asset, not a vague chat transcript. For ${audience}, the useful version is built around ${angle}. Start with the material that already exists, decide what the final output must do, draft in one narrow pass, then review the risky details before anyone uses it.
 
-Search intent: ${intent}. The reader is looking for a concrete process they can follow today, not theoretical explanations.
+Search intent: ${intent}. The reader wants a usable process they can copy today, so the first move is not choosing a fancy app. The first move is defining the input, output, review owner, and reuse point.
 
-The recommended workflow is: gather the raw material, draft one focused output, review it against real-world facts, and store the improved version for the next similar task.
+For this topic, the operating sequence is ${workflow.map((step) => step.toLowerCase()).join(' → ')}. Keep the sequence visible while drafting so the article, template, or deliverable does not drift into general AI advice.
 
-## Best ranking angle: ${angle}
+## Where ${primary} creates value
 
-The highest-value angle is repeatability. One good AI session should not disappear after the task is done. It should become a template, checklist, or saved prompt that makes the next task faster and more consistent.
+The ranking angle is ${angle}. That matters because searchers are usually trying to finish a specific job under time pressure. They do not need a broad tool roundup; they need a repeatable path from messy source material to a reviewed result.
 
-Use this workflow when you need one of these concrete outcomes:
+Practical outputs this workflow can create:
 
 ${renderBullets(plan.outcomeExamples)}
 
-Most weak AI content fails because it treats the tool as the strategy. The tool is only useful after the task is clear. That is why this guide starts with inputs and verification instead of a giant prompt collection.
+Before opening an AI tool, write one sentence that defines success for the output. Example: "After this workflow, I should have a reviewed ${primary} draft that is safe to send, publish, study from, or save as a template." That sentence keeps the work grounded and makes the review step easier.
 
 ## Tool stack for ${primary}
 
@@ -373,83 +377,87 @@ Most weak AI content fails because it treats the tool as the strategy. The tool 
 |----------------|------------------|--------------|
 ${toolRows}
 
-Start with the tools you already use. Switching apps is rarely the bottleneck. The bottleneck is usually missing context, unclear constraints, or no review process.
+Use the smallest stack that covers capture, drafting, review, and storage. If ${tools[0] || 'an LLM'} and ${tools[1] || 'a document editor'} are enough, do not add more software. Extra tools create more places for wrong facts, outdated copies, or private data leaks.
 
 ${workflowSteps}
 
-Do not move through these steps mechanically. If any draft feels generic, add more source material, examples, constraints, and audience details before asking AI to rewrite it. The workflow should produce something a real person can use without guessing what you meant.
+After each step, save the better wording, useful examples, and failed prompts. Those notes become the source material for the next run and make the workflow more specific over time.
 
 ## What to verify before using this workflow
 
-Check the parts that change over time before using this workflow for school, client, or business work:
+Run this verification check before relying on the output:
 
 ${renderBullets(plan.verification)}
 
-Also check current pricing and free-tier limits for any tool you mention. Product limits and feature names change often, so avoid building a client or business process around old assumptions.
+Also check whether the output exposes private student, client, customer, or business data. If it does, remove sensitive details before pasting into external tools or keep the work inside software the user already trusts.
 
-This verification pass is what separates useful AI-assisted work from risky automation. Keep a short record of what you checked, especially when the output affects a client, customer, school submission, or public business page.
+The verification pass should leave evidence. Keep a short note saying what was checked, what was changed, and what still needs a human decision. That record is useful if the same ${primary} task returns next week.
 
 ## Reusable prompt template for ${primary}
 
-Copy this structure and fill in your specifics. Save it as a text file for reuse:
+Copy-paste prompt template:
 
 \`\`\`
-Act as a practical AI workflow assistant for ${audience}.
+You are helping with ${primary} for ${audience}.
 
-Task: I need to use ${primary} for [specific outcome].
-Audience: [who will read or use the output].
-Inputs I have: [notes, links, examples, constraints, offers, dates, client details].
-Must include: [required sections, facts, examples, tone, format].
-Must avoid: [claims, phrases, details, or formats that would be wrong].
+Goal: [describe the exact outcome]
+Raw material: [paste notes, questions, requirements, examples, links, constraints]
+Output format: [document, checklist, email, table, study aid, website copy]
+Audience context: [who will use or read it]
+Known risks: [facts, dates, prices, claims, privacy issues]
+Tone: clear, practical, non-hype
 
-Process:
-1. Ask up to 3 clarifying questions if a required detail is missing.
-2. Draft the output in the requested format.
-3. Mark assumptions and facts that need verification.
-4. Give me a final checklist before I use or publish it.
+Work in this order:
+1. Identify missing information before drafting.
+2. Organize the raw material into sections.
+3. Draft the output with assumptions clearly marked.
+4. Create a verification checklist for anything uncertain.
+5. Suggest what should be saved as a reusable template.
 \`\`\`
 
-Key principle: the prompt is a working document. After each use, add the missing constraints that would have improved the first draft.
+If the first answer is generic, do not ask for "make it better." Add sharper inputs: real examples, banned wording, audience details, length limits, and the exact decision the output should support.
 
-## Save the verified output as a template
+## Store the reviewed version
 
-Template structure:
+Template record:
 
 \`\`\`
-# Task: [one-line description]
-# Prompt: [the refined prompt]
-# Verified output: [your corrected version]
-# Checklist: [the reusable checklist]
+# Workflow: ${primary}
+# Use case: [specific situation]
+# Best prompt: [paste the refined prompt]
+# Reviewed output: [paste the corrected result]
+# Checks completed: [facts, tone, formatting, privacy, links]
+# Next improvement: [what to add next time]
 \`\`\`
 
-Store the prompt, final output, and checklist together. Tag it with "${primary}", the audience, the channel, and the use case. Next time, start from the saved version and update only the details that changed.
+This storage step is part of the workflow, not admin work. Without it, ${audience} repeat the same prompt mistakes and review from zero every time. With it, each run improves the next run.
 
-The saved version should include your edits, not only the original AI draft. That way the template captures your judgment, preferred wording, and known constraints. Over time, this becomes a practical library of proven workflows rather than a folder of raw prompts.
+Keep the saved version close to the tool where the work happens. A restaurant owner might keep menu description prompts beside product photos; a student might keep study prompts beside class notes; a freelancer might keep client templates beside project folders. The exact app matters less than retrieval. If the reviewed version cannot be found in thirty seconds, the system will not survive busy weeks.
 
 ## Common mistakes to avoid
 
 ${renderBullets(plan.mistakes)}
 
-Each mistake has a simple fix: add more real context, ask for assumptions to be marked, verify details before use, and keep the final output tied to a clear action.
+The fix is to make the input more concrete before asking for polish. Add source notes, examples, constraints, and the channel where the output will live. Then ask the model to mark uncertainty instead of hiding it.
 
-When the output disappoints you, diagnose the workflow before blaming the tool. Most weak results trace back to missing inputs, unclear audience, no examples, or a skipped review step. Fixing those basics usually improves the next draft immediately.
+A weak run usually leaves clues: the draft sounds like it could fit any business, class, or client; the tool invents confident details; or the final text has no owner for review. Treat those clues as process problems. Improve the brief, narrow the output, and add a verification rule before generating another version.
 
 ## Final checklist before publishing or sending
 
-- [ ] Does the output answer the exact search intent or task behind "${primary}"?
-- [ ] Is the primary keyword "${primary}" used naturally in the title, H2, meta title, and first 100 words?
-- [ ] Are the examples specific to ${audience} instead of generic AI advice?
-- [ ] Are all claims verified or marked for human check?
-- [ ] Is there a clear next step the reader can take today?
-- [ ] Are internal links added to related guides?
-- [ ] Is the final version saved as a reusable template?
-- [ ] Does the FAQ address real searcher questions?
+- [ ] Does the output solve the exact ${primary} task?
+- [ ] Is "${primary}" used naturally in the title, opening, H2, and meta title?
+- [ ] Are the examples specific to ${audience} and the selected use case?
+- [ ] Did you remove invented facts, fake numbers, and unsupported claims?
+- [ ] Is there a copy-paste prompt or prompt template saved for reuse?
+- [ ] Are verification checks written next to the final output?
+- [ ] Are related internal links included without linking to this same post?
+- [ ] Would a beginner know the next action after reading it?
 
 ## Bottom line
 
-${sentenceCase(primary)} works best when it is treated as a repeatable operating process. Define the input, create a focused draft, verify the risky details, and save the improved result. That is what makes the workflow useful beyond one AI chat.
+${sentenceCase(primary)} is worth using when it turns repeated work into a checked process. The process is simple: define the source material, draft with constraints, review the risky details, and save the improved version. That is how ${audience} get speed without publishing sloppy AI output.
 
-For ranking and reader trust, the same rule applies: publish the specific process, not generic AI enthusiasm. A reader should leave with a prompt they can run, a checklist they can trust, and a clear sense of what still needs human review.
+Do not measure this workflow only by how fast the first draft appears. Measure whether the final version is accurate, specific, reusable, and safe for the channel where it will be used. If those four conditions are met, the workflow can become a small operating system for repeated work instead of another disposable AI chat.
 
 ### Related guides on mdevtech Blogs
 
