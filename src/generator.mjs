@@ -167,6 +167,11 @@ async function main() {
   const slot = currentSlot(now);
   const clusters = await loadKeywordClusters();
   const existingPosts = await readPosts();
+  if (!force && existingPosts.some((post) => String(post.slug || '').startsWith(`${slot}-`))) {
+    console.log(`Post already exists for slot: ${slot}`);
+    process.exit(0);
+  }
+
   const cluster = selectKeywordCluster(slot, clusters, { existingPosts });
   const target = path.join(POSTS_DIR, `${slot}-${slugify(cluster.slug || cluster.primaryKeyword)}.json`);
 

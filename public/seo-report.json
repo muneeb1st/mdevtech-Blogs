@@ -1,11 +1,24 @@
 {
-  "generatedAt": "2026-06-17T12:12:39.425Z",
+  "generatedAt": "2026-06-17T12:18:29.764Z",
   "summary": {
-    "posts": 5,
+    "posts": 6,
     "errors": 0,
     "warnings": 0
   },
   "posts": [
+    {
+      "slug": "2026-06-17-12-ai-email-templates-for-freelancers-workflow",
+      "seoScore": 0.9,
+      "passed": true,
+      "errors": [],
+      "warnings": [],
+      "metrics": {
+        "titleLength": 59,
+        "metaTitleLength": 56,
+        "metaDescriptionLength": 152,
+        "bodyWordCount": 1946
+      }
+    },
     {
       "slug": "2026-06-17-12-ai-tools-for-local-restaurants-workflow",
       "seoScore": 0.9,

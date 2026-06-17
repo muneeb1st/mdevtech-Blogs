@@ -344,6 +344,14 @@ ${step.prompt}
 
 Verification check: ${step.check}`).join('\n\n');
   const toolRows = plan.toolRows.map((row) => `| ${row[0]} | ${row[1]} | ${row[2]} |`).join('\n');
+  const topicSpecificBrief = [
+    `For ${primary}, collect source material that names the exact task: ${workflow.join(', ')}.`,
+    `Useful inputs include ${secondary.length ? secondary.join(', ') : 'real examples, notes, constraints, and review rules'} plus screenshots, old drafts, customer or class questions, and the channel where the final output will be used.`,
+    `A ${audience} workflow should mention the actual tools in the stack — ${tools.join(', ')} — only where they help the job, not as decoration.`,
+    `The final draft should be reviewed against ${angle.toLowerCase()}, because that is the reason this keyword deserves its own article instead of being merged into a generic AI tools guide.`,
+    `If the work involves ${workflow[0]?.toLowerCase() || 'collecting input'}, save one example of a good input. If it involves ${workflow[1]?.toLowerCase() || 'drafting'}, save one before-and-after rewrite. If it involves ${workflow[2]?.toLowerCase() || 'review'}, save the checklist that caught mistakes.`,
+    `For searchers comparing ${secondary[0] || primary} with ${secondary[1] || 'general AI tools'}, the deciding factor is not feature count. The deciding factor is whether the workflow produces a result they can trust without hours of cleanup.`
+  ].join('\n\n');
 
   const baseSlug = cluster.slug || primary.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
   const slug = baseSlug;
@@ -370,6 +378,10 @@ Practical outputs this workflow can create:
 ${renderBullets(plan.outcomeExamples)}
 
 Before opening an AI tool, write one sentence that defines success for the output. Example: "After this workflow, I should have a reviewed ${primary} draft that is safe to send, publish, study from, or save as a template." That sentence keeps the work grounded and makes the review step easier.
+
+Topic-specific input brief:
+
+${topicSpecificBrief}
 
 ## Tool stack for ${primary}
 
