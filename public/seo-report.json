@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-18T00:19:06.215Z",
+  "generatedAt": "2026-06-18T08:24:44.092Z",
   "summary": {
     "posts": 7,
     "errors": 0,
@@ -29,7 +29,7 @@
         "titleLength": 53,
         "metaTitleLength": 53,
         "metaDescriptionLength": 162,
-        "bodyWordCount": 1946
+        "bodyWordCount": 1939
       }
     },
     {
@@ -42,7 +42,7 @@
         "titleLength": 50,
         "metaTitleLength": 50,
         "metaDescriptionLength": 158,
-        "bodyWordCount": 1784
+        "bodyWordCount": 1779
       }
     },
     {
@@ -55,7 +55,7 @@
         "titleLength": 53,
         "metaTitleLength": 53,
         "metaDescriptionLength": 158,
-        "bodyWordCount": 1725
+        "bodyWordCount": 1720
       }
     },
     {
@@ -68,7 +68,7 @@
         "titleLength": 47,
         "metaTitleLength": 47,
         "metaDescriptionLength": 156,
-        "bodyWordCount": 1662
+        "bodyWordCount": 1655
       }
     },
     {
@@ -81,7 +81,7 @@
         "titleLength": 46,
         "metaTitleLength": 46,
         "metaDescriptionLength": 155,
-        "bodyWordCount": 1765
+        "bodyWordCount": 1761
       }
     },
     {
@@ -94,7 +94,7 @@
         "titleLength": 51,
         "metaTitleLength": 51,
         "metaDescriptionLength": 160,
-        "bodyWordCount": 1697
+        "bodyWordCount": 1693
       }
     }
   ],

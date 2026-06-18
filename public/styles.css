@@ -529,6 +529,47 @@ html.dark .intro-icon-wrapper {
   border-color: var(--ink);
 }
 
+.newsletter-cta.compact {
+  margin: 2.5rem 0;
+}
+
+.newsletter-form {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  min-width: min(100%, 360px);
+}
+
+.newsletter-form input[type="email"] {
+  min-height: 42px;
+  min-width: min(100%, 220px);
+  border: 1px solid var(--edge);
+  border-radius: 999px;
+  background: var(--paper);
+  color: var(--ink);
+  padding: 0.65rem 1rem;
+  font: inherit;
+}
+
+.newsletter-form input[type="email"]:focus {
+  border-color: var(--teal);
+  outline: 2px solid color-mix(in srgb, var(--teal) 22%, transparent);
+  outline-offset: 2px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 /* ── Post Cards Grid ─────────────────────────────────── */
 
 .grid {
@@ -1105,8 +1146,13 @@ tr:hover td {
     padding: 1.5rem;
   }
 
-  .workflow-cta-actions {
+  .workflow-cta-actions,
+  .newsletter-form {
     justify-content: flex-start;
+  }
+
+  .newsletter-form {
+    width: 100%;
   }
 
   .footer-container {

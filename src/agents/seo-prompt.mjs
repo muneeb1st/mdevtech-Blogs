@@ -132,8 +132,19 @@ export function buildNaturalMetaDescription(primary = '') {
   return `Learn a practical ${primary} workflow with tools, prompt templates, verification checks, and common mistakes to avoid before you reuse it.`;
 }
 
+function primaryAlreadyNamesAudience(primary = '', audience = '') {
+  if (!audience) return false;
+  const primaryLower = String(primary).toLowerCase();
+  const audienceLower = String(audience).toLowerCase();
+  return primaryLower.includes(`for ${audienceLower}`);
+}
+
 export function buildNaturalExcerpt(primary = '', audience = '') {
-  return `A practical ${primary} workflow${audience ? ` for ${audience}` : ''}, with tools, prompt templates, and verification checks.`;
+  const audiencePhrase = audience && !primaryAlreadyNamesAudience(primary, audience) ? ` for ${audience}` : '';
+  if (!audiencePhrase) {
+    return `A practical ${primary} workflow with saved prompts, tool choices, and verification checks before you reuse the output.`;
+  }
+  return `A practical ${primary} workflow${audiencePhrase}, with tools, prompt templates, and verification checks.`;
 }
 
 function renderBullets(items = []) {

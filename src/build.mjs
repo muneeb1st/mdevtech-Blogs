@@ -158,6 +158,42 @@ function nodeDivider() {
   return `<div class="node-divider" aria-hidden="true"><span></span></div>`;
 }
 
+function renderNewsletterCta({ compact = false } = {}) {
+  const actionUrl = usableEnvValue(process.env.NEWSLETTER_ACTION_URL || '');
+  const title = compact ? 'Get the next workflow' : 'Get one useful AI workflow each week.';
+  const text = compact
+    ? 'One practical process, prompt template, and verification checklist. No tool hype.'
+    : 'No tool hype. One practical process, prompt template, and verification checklist you can actually reuse.';
+
+  if (actionUrl) {
+    return `<section class="workflow-cta newsletter-cta${compact ? ' compact' : ''}" aria-labelledby="newsletter-cta-title">
+    <div>
+      <p class="eyebrow">Keep the good workflows</p>
+      <h2 id="newsletter-cta-title">${escapeHtml(title)}</h2>
+      <p>${escapeHtml(text)}</p>
+    </div>
+    <form class="newsletter-form" action="${escapeHtml(actionUrl)}" method="post">
+      <label class="sr-only" for="newsletter-email${compact ? '-compact' : ''}">Email address</label>
+      <input id="newsletter-email${compact ? '-compact' : ''}" type="email" name="email" placeholder="you@example.com" required>
+      <input type="hidden" name="source" value="${compact ? 'post' : 'homepage'}">
+      <button class="primary-cta" type="submit">Send me workflows</button>
+    </form>
+  </section>`;
+  }
+
+  return `<section class="workflow-cta newsletter-cta${compact ? ' compact' : ''}" aria-labelledby="newsletter-cta-title">
+    <div>
+      <p class="eyebrow">Keep the good workflows</p>
+      <h2 id="newsletter-cta-title">${escapeHtml(title)}</h2>
+      <p>${escapeHtml(text)}</p>
+    </div>
+    <div class="workflow-cta-actions">
+      <a class="primary-cta" href="/rss.xml">Subscribe via RSS</a>
+      <a class="secondary-cta" href="/contact/">Request a workflow</a>
+    </div>
+  </section>`;
+}
+
 function buildArticleJsonLd(post) {
   const json = {
     '@context': 'https://schema.org',
@@ -487,17 +523,7 @@ async function build() {
   </section>
   <section class="grid" aria-label="Latest workflow guides">${posts.map(postCard).join('\n') || '<p>No posts yet. Run <code>npm run generate</code>.</p>'}</section>
   ${nodeDivider()}
-  <section class="workflow-cta" aria-labelledby="workflow-cta-title">
-    <div>
-      <p class="eyebrow">Keep the good workflows</p>
-      <h2 id="workflow-cta-title">Get one useful AI workflow each week.</h2>
-      <p>No tool hype. One practical process, prompt template, and verification checklist you can actually reuse.</p>
-    </div>
-    <div class="workflow-cta-actions">
-      <a class="primary-cta" href="/rss.xml">Subscribe via RSS</a>
-      <a class="secondary-cta" href="/contact/">Request a workflow</a>
-    </div>
-  </section>`;
+  ${renderNewsletterCta()}`;
 
   await fs.writeFile(path.join(PUBLIC_DIR, 'index.html'), layout({
     title: `${site.title} | AI workflow guides`,
@@ -523,6 +549,7 @@ async function build() {
       <p class="lede">${escapeHtml(post.excerpt)}</p>
       ${renderTags(post.tags)}
       ${renderMarkdownish(post.body)}
+      ${renderNewsletterCta({ compact: true })}
       ${renderFaq(post.faq)}
       ${relatedPosts(posts, post.slug)}
     </article>`;
