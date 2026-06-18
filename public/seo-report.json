@@ -1,11 +1,24 @@
 {
-  "generatedAt": "2026-06-17T12:18:29.764Z",
+  "generatedAt": "2026-06-18T00:19:06.215Z",
   "summary": {
-    "posts": 6,
+    "posts": 7,
     "errors": 0,
     "warnings": 0
   },
   "posts": [
+    {
+      "slug": "2026-06-18-00-ai-productivity-tools-for-students-workflow",
+      "seoScore": 0.9,
+      "passed": true,
+      "errors": [],
+      "warnings": [],
+      "metrics": {
+        "titleLength": 54,
+        "metaTitleLength": 54,
+        "metaDescriptionLength": 162,
+        "bodyWordCount": 1945
+      }
+    },
     {
       "slug": "2026-06-17-12-ai-email-templates-for-freelancers-workflow",
       "seoScore": 0.9,
@@ -13,9 +26,9 @@
       "errors": [],
       "warnings": [],
       "metrics": {
-        "titleLength": 59,
-        "metaTitleLength": 56,
-        "metaDescriptionLength": 152,
+        "titleLength": 53,
+        "metaTitleLength": 53,
+        "metaDescriptionLength": 162,
         "bodyWordCount": 1946
       }
     },
@@ -26,8 +39,8 @@
       "errors": [],
       "warnings": [],
       "metrics": {
-        "titleLength": 65,
-        "metaTitleLength": 62,
+        "titleLength": 50,
+        "metaTitleLength": 50,
         "metaDescriptionLength": 158,
         "bodyWordCount": 1784
       }
@@ -39,9 +52,9 @@
       "errors": [],
       "warnings": [],
       "metrics": {
-        "titleLength": 52,
-        "metaTitleLength": 49,
-        "metaDescriptionLength": 145,
+        "titleLength": 53,
+        "metaTitleLength": 53,
+        "metaDescriptionLength": 158,
         "bodyWordCount": 1725
       }
     },
@@ -52,8 +65,8 @@
       "errors": [],
       "warnings": [],
       "metrics": {
-        "titleLength": 63,
-        "metaTitleLength": 60,
+        "titleLength": 47,
+        "metaTitleLength": 47,
         "metaDescriptionLength": 156,
         "bodyWordCount": 1662
       }
@@ -65,9 +78,9 @@
       "errors": [],
       "warnings": [],
       "metrics": {
-        "titleLength": 52,
-        "metaTitleLength": 49,
-        "metaDescriptionLength": 145,
+        "titleLength": 46,
+        "metaTitleLength": 46,
+        "metaDescriptionLength": 155,
         "bodyWordCount": 1765
       }
     },
@@ -78,8 +91,8 @@
       "errors": [],
       "warnings": [],
       "metrics": {
-        "titleLength": 67,
-        "metaTitleLength": 64,
+        "titleLength": 51,
+        "metaTitleLength": 51,
         "metaDescriptionLength": 160,
         "bodyWordCount": 1697
       }

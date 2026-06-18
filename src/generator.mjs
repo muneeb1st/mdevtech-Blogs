@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 import 'dotenv/config';
 import path from 'node:path';
-import { buildFallbackPost, buildSeoPrompt } from './agents/seo-prompt.mjs';
+import { buildFallbackPost, buildNaturalExcerpt, buildNaturalMetaDescription, buildNaturalMetaTitle, buildNaturalTitle, buildSeoPrompt } from './agents/seo-prompt.mjs';
 import { generateWithHermes } from './agents/hermes-runner.mjs';
 import { currentSlot, fileExists, POSTS_DIR, readPosts, slugify, writePost } from './lib.mjs';
 import { loadKeywordClusters, selectKeywordCluster } from './seo/keywords.mjs';
@@ -83,10 +83,24 @@ function ensureInternalLinks(post, existingPosts) {
     .slice(0, 3);
 }
 
+function hasMachineTitle(title = '', cluster = {}) {
+  const lowerTitle = String(title).toLowerCase().replace(/\s+/g, ' ').trim();
+  const audience = String(cluster.audience || '').toLowerCase();
+  const primary = String(cluster.primaryKeyword || '').toLowerCase();
+  if (!lowerTitle) return true;
+  if (/\bworkflow for ([a-z ]+)\b/.test(lowerTitle) && primary.includes(`for ${audience}`)) return true;
+  if (audience && (lowerTitle.match(new RegExp(`\\bfor ${audience.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\b`, 'g')) || []).length > 1) return true;
+  if (/\bworkflow for\b.+\bfor\b/.test(lowerTitle)) return true;
+  return false;
+}
+
 function normalizePost(raw, cluster, now) {
   const slot = currentSlot(now);
   const baseSlug = cluster.slug || slugify(cluster.primaryKeyword);
-  const title = raw.title || `${cluster.primaryKeyword}: practical workflow for ${cluster.audience}`;
+  const naturalTitle = buildNaturalTitle(cluster.primaryKeyword, cluster.audience);
+  const title = hasMachineTitle(raw.title, cluster)
+    ? naturalTitle
+    : (raw.title || naturalTitle);
   const slug = `${slot}-${slugify(raw.slug || baseSlug)}`;
   const body = raw.body || raw.bodyMarkdown || '';
 
@@ -102,17 +116,22 @@ function normalizePost(raw, cluster, now) {
     ? { ...baseJsonLd, ...raw.jsonLd, '@context': 'https://schema.org', '@type': 'BlogPosting' }
     : baseJsonLd;
 
+  const naturalMetaTitle = buildNaturalMetaTitle(cluster.primaryKeyword, cluster.audience);
+  const naturalMetaDescription = buildNaturalMetaDescription(cluster.primaryKeyword);
+  const naturalExcerpt = buildNaturalExcerpt(cluster.primaryKeyword, cluster.audience);
+  const machineTitle = hasMachineTitle(raw.title, cluster);
+
   const post = {
     title,
     slug,
     date: raw.date || now.toISOString(),
     niche,
     author,
-    excerpt: raw.excerpt || body.slice(0, 155).replace(/\s+/g, ' ').trim(),
+    excerpt: machineTitle || hasMachineTitle(raw.excerpt, cluster) ? naturalExcerpt : (raw.excerpt || body.slice(0, 155).replace(/\s+/g, ' ').trim()),
     tags: Array.isArray(raw.tags) ? raw.tags : [cluster.primaryKeyword, cluster.audience, 'AI automation'],
     body,
-    metaTitle: raw.metaTitle || title,
-    metaDescription: raw.metaDescription || body.slice(0, 155).replace(/\s+/g, ' ').trim(),
+    metaTitle: machineTitle || hasMachineTitle(raw.metaTitle, cluster) ? naturalMetaTitle : (raw.metaTitle || naturalMetaTitle),
+    metaDescription: machineTitle || hasMachineTitle(raw.metaDescription, cluster) ? naturalMetaDescription : (raw.metaDescription || naturalMetaDescription),
     focusKeywords: Array.isArray(raw.focusKeywords) ? raw.focusKeywords : [cluster.primaryKeyword],
     searchIntent: raw.searchIntent || cluster.searchIntent || 'informational',
     faq: Array.isArray(raw.faq) ? raw.faq : [],

@@ -462,6 +462,73 @@ html.dark .intro-icon-wrapper {
   margin: 0;
 }
 
+/* ── Conversion CTA ──────────────────────────────────── */
+
+.workflow-cta {
+  display: flex;
+  justify-content: space-between;
+  gap: 2rem;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--edge);
+  border-left: 3px solid var(--teal);
+  border-radius: var(--radius);
+  padding: 2rem;
+  box-shadow: 0 10px 30px var(--teal-glow);
+}
+
+.workflow-cta h2 {
+  font-size: 1.6rem;
+  margin-bottom: 0.5rem;
+}
+
+.workflow-cta p:not(.eyebrow) {
+  color: var(--stone);
+  margin: 0;
+  max-width: 38rem;
+}
+
+.workflow-cta-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+.primary-cta,
+.secondary-cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  border-radius: 999px;
+  padding: 0.65rem 1rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  border: 1px solid var(--teal);
+}
+
+.primary-cta {
+  background: var(--teal);
+  color: white;
+}
+
+.primary-cta:hover {
+  color: white;
+  opacity: 0.9;
+}
+
+.secondary-cta {
+  color: var(--teal);
+  background: transparent;
+}
+
+.secondary-cta:hover {
+  color: var(--ink);
+  border-color: var(--ink);
+}
+
 /* ── Post Cards Grid ─────────────────────────────────── */
 
 .grid {
@@ -1030,6 +1097,16 @@ tr:hover td {
 
   .grid {
     gap: 1rem;
+  }
+
+  .workflow-cta {
+    align-items: flex-start;
+    flex-direction: column;
+    padding: 1.5rem;
+  }
+
+  .workflow-cta-actions {
+    justify-content: flex-start;
   }
 
   .footer-container {

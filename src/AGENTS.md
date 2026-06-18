@@ -21,6 +21,7 @@ Source modules generate SEO-optimized blog content with Hermes Agent, compile st
 - The default generation path must call Hermes unless `--offline` is used or Hermes is unavailable.
 - Hermes must use the default model/provider configured in Hermes unless `HERMES_MODEL`, `HERMES_PROVIDER`, or CLI flags are specified.
 - Generated posts must be valid JSON and pass the SEO validator before publish.
+- Generated titles must keep the primary keyword but read like human editorial titles; avoid repeated audience phrases such as `workflow for freelancers` when the keyword already includes `for freelancers`.
 - All file writes must stay inside project folders.
 - Generated slugs must be deterministic and filesystem-safe.
 - Build output must be static-host compatible.

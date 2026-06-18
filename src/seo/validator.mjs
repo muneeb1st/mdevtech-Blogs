@@ -50,6 +50,10 @@ export function validatePostSeo(post, options = {}) {
   const bodyText = bodyLower;
 
   if (titleLength < minTitleLength || titleLength > maxTitleLength) pushOrError(errors, warnings, strict, `Title length ${titleLength} must be ${minTitleLength}-${maxTitleLength} characters.`);
+  const titleLower = String(post.title || '').toLowerCase().replace(/\s+/g, ' ').trim();
+  if (/\bworkflow for ([a-z ]+)\b.+\bfor \1\b/.test(titleLower) || /\bworkflow for\b.+\bfor\b/.test(titleLower)) {
+    pushOrError(errors, warnings, strict, 'Title looks machine-generated: avoid repeated "workflow for ... for ..." phrasing.');
+  }
   if (metaTitleLength < minMetaTitleLength || metaTitleLength > maxMetaTitleLength) pushOrError(errors, warnings, strict, `Meta title length ${metaTitleLength} must be ${minMetaTitleLength}-${maxMetaTitleLength} characters.`);
   if (metaDescriptionLength < minMetaDescLength || metaDescriptionLength > maxMetaDescLength) pushOrError(errors, warnings, strict, `Meta description length ${metaDescriptionLength} must be ${minMetaDescLength}-${maxMetaDescLength} characters.`);
   if (bodyWordCount < minWords) pushOrError(errors, warnings, strict, `Body word count ${bodyWordCount} is below required ${minWords} words.`);

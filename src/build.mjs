@@ -133,7 +133,7 @@ function layout({ title, description, canonical, body, post }) {
       </div>
     </div>
     <div class="footer-bottom">
-      <p>&copy; ${new Date().getFullYear()} ${escapeHtml(site.title)}. Built by ${escapeHtml(site.author)}. Autonomous publication with human-checked quality.</p>
+      <p>&copy; ${new Date().getFullYear()} ${escapeHtml(site.title)}. Built by ${escapeHtml(site.author)}. Practical workflow guides with human review checkpoints.</p>
     </div>
   </footer>
   <script>
@@ -466,8 +466,8 @@ async function build() {
           <line x1="12" y1="17" x2="12" y2="21"></line>
         </svg>
       </div>
-      <h2>Autonomous publishing</h2>
-      <p>Hermes Agent researches and drafts each guide, with deterministic fallback when needed.</p>
+      <h2>Tested process</h2>
+      <p>Guides are built around repeatable steps, saved prompts, and review checkpoints instead of broad AI tool lists.</p>
     </article>
     <article>
       <div class="intro-icon-wrapper">
@@ -485,7 +485,19 @@ async function build() {
     <p class="eyebrow">Latest guides</p>
     <h2>Fresh workflows ready to use</h2>
   </section>
-  <section class="grid" aria-label="Latest workflow guides">${posts.map(postCard).join('\n') || '<p>No posts yet. Run <code>npm run generate</code>.</p>'}</section>`;
+  <section class="grid" aria-label="Latest workflow guides">${posts.map(postCard).join('\n') || '<p>No posts yet. Run <code>npm run generate</code>.</p>'}</section>
+  ${nodeDivider()}
+  <section class="workflow-cta" aria-labelledby="workflow-cta-title">
+    <div>
+      <p class="eyebrow">Keep the good workflows</p>
+      <h2 id="workflow-cta-title">Get one useful AI workflow each week.</h2>
+      <p>No tool hype. One practical process, prompt template, and verification checklist you can actually reuse.</p>
+    </div>
+    <div class="workflow-cta-actions">
+      <a class="primary-cta" href="/rss.xml">Subscribe via RSS</a>
+      <a class="secondary-cta" href="/contact/">Request a workflow</a>
+    </div>
+  </section>`;
 
   await fs.writeFile(path.join(PUBLIC_DIR, 'index.html'), layout({
     title: `${site.title} | AI workflow guides`,

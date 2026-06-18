@@ -25,7 +25,8 @@ The goal is to maximize Google ranking potential through keyword targeting, Herm
 - Avoid scraped or copyrighted content. Posts must be original, practical, evergreen, and human-checkable.
 - Google #1 cannot be guaranteed. The system optimizes ranking factors: keyword intent, quality, technical SEO, internal links, structured data, indexing, and consistency.
 - Autonomous publishing must prefer low-difficulty long-tail workflow keywords unless `PREFER_LOW_DIFFICULTY_KEYWORDS=0` is explicitly set.
-- Strict SEO validation must block generic AI filler, duplicated post bodies, missing copy-paste prompts, missing verification guidance, missing checklist sections, missing tool comparison tables, self-links, weak internal linking, bad canonicals, and weak structured data.
+- Strict SEO validation must block generic AI filler, duplicated post bodies, machine-looking repeated titles, missing copy-paste prompts, missing verification guidance, missing checklist sections, missing tool comparison tables, self-links, weak internal linking, bad canonicals, and weak structured data.
+- Homepage and footer copy should emphasize practical workflows, tested process, and human review checkpoints. Do not market the site as AI-generated/autonomous publishing to readers.
 - Cron/CI must run strict SEO audit before committing generated content.
 - Keep dependencies minimal. Prefer Node.js standard library unless a dependency clearly buys leverage.
 - Supabase credentials must never be committed. Use `.env` locally and Vercel/Supabase secrets in CI.
